@@ -91,7 +91,7 @@ npm run preview      # preview the production build
 docker compose up -d --build
 ```
 
-This builds the **multi-stage Dockerfile** (`node:22-alpine`), exposes port `3000`, and mounts `./config` into the container so your dashboard configuration persists across restarts.
+This builds the **multi-stage Dockerfile** (`node:22-alpine`), exposes port `3000`, and mounts `./config` into the container so your dashboard configuration **and the default background image** (`config/default-bg.jpg`) persist across restarts. Both are read from the mounted volume at runtime, so editing them takes effect without a rebuild.
 
 ### Manual build
 
@@ -104,7 +104,12 @@ docker run -d \
   gldash
 ```
 
-Set the `PORT` environment variable to change the listening port.
+### Environment variables
+
+| Variable      | Description                                  | Default                 |
+| ------------- | -------------------------------------------- | ----------------------- |
+| `CONFIG_PATH` | Path to the dashboard's `config.yaml`.        | `./config/config.yaml`  |
+| `PORT`        | HTTP port for the Node server.                | `3000`                  |
 
 ---
 
@@ -121,7 +126,7 @@ settings:
     textColor: "#f8fafc"
     cardBackground: "#1e293b"
     backgroundMode: "default"        # "default" | "custom" | "solid"
-    backgroundImage: ""              # set to the uploaded image URL when custom
+    backgroundImage: ""              # uploaded image URL, only used when custom
 
 categories:
   - id: "infra-01"                # optional, auto-generated if omitted
@@ -135,6 +140,8 @@ categories:
         githubRepo: "pi-hole/pi-hole"  # reserved for Phase 3 (update badges)
         dockerImage: "pihole/pihole"   # reserved for Phase 3
 ```
+
+The **default background** lives at `config/default-bg.jpg` — the same directory as `config.yaml` — and is served from there at request time, so replacing the file (or mounting a new one) updates the dashboard without a rebuild. When `backgroundMode` is `solid`, the image is ignored and the solid color + gradient overlay is used.
 
 ### Icon resolution
 
@@ -166,18 +173,24 @@ categories:
 ```
 src/
 ├── lib/
-│   ├── components/       # AppShell, AppCard, CategorySection, Toolbar,
-│   │                     # SettingsDrawer, EditAppModal, ConfirmDialog, Spotlight...
-│   ├── server/           # yaml engine, background helpers
-│   ├── state/            # dashboard.svelte.ts (reactive global state)
-│   └── types.ts          # Zod schemas + exported TS types
+│   ├── assets/            # favicon.svg
+│   ├── components/        # Toolbar, CategorySection, AppCard, AppIcon,
+│   │                      # EditAppModal, SettingsDrawer, Spotlight, ConfirmDialog
+│   ├── server/            # yaml.ts (config read/write), background.ts (image helpers)
+│   ├── state/             # dashboard.svelte.ts (reactive global state)
+│   ├── utils/             # icons.ts (icon resolution)
+│   ├── types.ts           # Zod schemas + exported TS types
+│   └── index.ts           # barrel export for the $lib alias
 └── routes/
-    ├── +page.svelte      # dashboard shell
-    ├── +layout.svelte    # root layout
+    ├── +layout.svelte     # root layout (loads Tailwind + favicon)
+    ├── +page.server.ts    # server load: reads config
+    ├── +page.svelte       # dashboard shell (background styling)
+    ├── layout.css         # Tailwind v4 import + CSS custom properties
     └── api/
-        ├── config/       # GET/POST config
-        ├── background/   # POST upload, DELETE
-        │   └── image/    # GET serve current image
+        ├── config/        # GET/POST config
+        ├── background/    # POST upload, DELETE
+        │   ├── default/   # GET serve config/default-bg.jpg
+        │   └── image/     # GET serve uploaded image
         └── icons/simple-icons/[slug]/   # server-side brand SVGs
 ```
 
