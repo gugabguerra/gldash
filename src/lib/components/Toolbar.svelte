@@ -30,26 +30,26 @@
 				{@const Icon = layoutIcons[mode]}
 				<button
 					onclick={() => setLayout(mode)}
-					class={`rounded p-1.5 transition-all duration-150 ${dashboard.config.settings.layout === mode ? 'bg-slate-700/60 text-slate-100' : 'text-slate-400 hover:text-slate-200'}`}
+					class={`rounded p-2 transition-all duration-150 ${dashboard.config.settings.layout === mode ? 'bg-slate-700/60 text-slate-100' : 'text-slate-400 hover:text-slate-200'}`}
 					aria-label={`${mode} layout`}
 				>
-					<Icon size={16} />
+					<Icon size={18} />
 				</button>
 			{/each}
 		</div>
 
 		<button
 			onclick={() => dashboard.openSpotlight()}
-			class="flex items-center gap-2 rounded-md border border-slate-700/50 px-3 py-1.5 text-sm text-slate-400 transition-all duration-150 hover:border-slate-500/50"
+			class="flex items-center gap-2 rounded-md border border-slate-700/50 px-3.5 py-2 text-sm text-slate-400 transition-all duration-150 hover:border-slate-500/50"
 		>
-			<Search size={14} />
+			<Search size={16} />
 			<span class="hidden sm:inline">Search</span>
 			<kbd class="hidden rounded border border-slate-600/50 px-1 text-xs text-slate-500 sm:inline">⌘K</kbd>
 		</button>
 
 		<button
 			onclick={() => dashboard.openSettings()}
-			class="rounded-md border border-slate-700/50 p-1.5 text-slate-400 transition-all duration-150 hover:border-slate-500/50 hover:text-slate-200"
+			class="rounded-md border border-slate-700/50 p-2 text-slate-400 transition-all duration-150 hover:border-slate-500/50 hover:text-slate-200"
 			aria-label="Settings"
 		>
 			<Settings size={16} />
@@ -57,12 +57,12 @@
 
 		<button
 			onclick={onToggleEdit}
-			class={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition-all duration-150 ${dashboard.editMode ? 'border-emerald-500/50 text-emerald-300' : 'border-slate-700/50 text-slate-400 hover:border-slate-500/50'}`}
+			class={`flex items-center gap-2 rounded-md border px-3.5 py-2 text-sm transition-all duration-150 ${dashboard.editMode ? 'border-emerald-500/50 text-emerald-300' : 'border-slate-700/50 text-slate-400 hover:border-slate-500/50'}`}
 		>
 			{#if dashboard.editMode}
-				<Check size={14} /> Done
+				<Check size={16} /> Done
 			{:else}
-				<Pencil size={14} /> Edit
+				<Pencil size={16} /> Edit
 			{/if}
 		</button>
 	</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { dndzone, type DndEvent } from 'svelte-dnd-action';
 	import { flip } from 'svelte/animate';
-	import { Plus, Trash2 } from '@lucide/svelte';
+	import { Plus, Trash2, GripVertical } from '@lucide/svelte';
 	import AppCard from './AppCard.svelte';
 	import type { App } from '$lib/types';
 	import { dashboard } from '$lib/state/dashboard.svelte';
@@ -23,8 +23,11 @@
 	}
 
 	function handleFinalize(e: CustomEvent<DndEvent<App>>) {
-		dashboard.config.categories[categoryIndex].apps = e.detail.items;
-		dashboard.save();
+		const newApps = e.detail.items;
+		setTimeout(() => {
+			dashboard.config.categories[categoryIndex].apps = newApps;
+			dashboard.save();
+		}, 0);
 	}
 
 	function onAddApp() {
@@ -43,6 +46,10 @@
 		6: 'sm:grid-cols-2 lg:grid-cols-6'
 	};
 
+	// In the two-column category layout each category is half the container
+	// width, so cap the app grid at 2 columns to keep cards readable.
+	const effectiveColumns = $derived(layout === 'grid' ? Math.min(columns, 2) : columns);
+
 	const dndType = 'gldash-apps';
 	const dropTargetStyle = { outline: '2px dashed rgba(148, 163, 184, 0.6)', outlineOffset: '2px' };
 	const emptyClass = $derived(apps.length === 0 ? 'min-h-[80px]' : '');
@@ -50,7 +57,16 @@
 
 <section class="mb-8">
 	<div class="mb-3 flex items-center justify-between">
-		<h2 class="text-sm font-semibold uppercase tracking-wide text-slate-400">{name}</h2>
+		<div class="flex items-center gap-2">
+			{#if dashboard.editMode}
+				<span
+					class="dnd-handle flex cursor-grab items-center rounded-md border border-slate-700/50 p-1 text-slate-400 transition-all duration-150 hover:border-slate-500/50 hover:text-slate-200"
+				>
+					<GripVertical size={12} />
+				</span>
+			{/if}
+			<h2 class="text-sm font-semibold uppercase tracking-wide text-slate-400">{name}</h2>
+		</div>
 		{#if dashboard.editMode}
 			<div class="flex items-center gap-2">
 				<button
@@ -135,7 +151,7 @@
 				</div>
 			{/if}
 			<div
-				class={`grid grid-cols-1 gap-4 ${gridColsClass[columns] ?? gridColsClass[4]} ${emptyClass}`}
+				class={`grid grid-cols-1 gap-4 ${gridColsClass[effectiveColumns] ?? gridColsClass[2]} ${emptyClass}`}
 				use:dndzone={{
 					items: apps,
 					type: dndType,

@@ -5,6 +5,14 @@ import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+	// The config directory is only runtime state managed by the app. Excluding it
+	// from Vite's watcher prevents a full dev-server page reload every time the
+	// dashboard persists changes (which would discard client-side UI state).
+	server: {
+		watch: {
+			ignored: ['**/config/**']
+		}
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit({
