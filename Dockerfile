@@ -27,6 +27,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 
 RUN mkdir -p /app/config /app/static/backgrounds
+COPY --from=build /app/config/config.defaults.yaml /app/config/config.defaults.yaml
 
 EXPOSE 3000
 

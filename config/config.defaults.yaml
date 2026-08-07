@@ -6,6 +6,7 @@ settings:
     textColor: '#f8fafc'
     cardBackground: '#1e293b'
     backgroundMode: default
+
 categories:
   - id: infra
     name: Infrastructure
@@ -20,11 +21,7 @@ categories:
         url: http://192.168.1.10:8080
         icon: simple-icons:traefikproxy
         note: Reverse Proxy
-      - id: jellyfin-01
-        title: Jellyfin
-        url: http://192.168.1.10:8096
-        icon: simple-icons:jellyfin
-        note: Media Player
+
   - id: media
     name: Media
     apps:
@@ -33,6 +30,12 @@ categories:
         url: http://192.168.1.10:32400/web
         icon: simple-icons:plex
         note: Media Server
+      - id: jellyfin-01
+        title: Jellyfin
+        url: http://192.168.1.10:8096
+        icon: simple-icons:jellyfin
+        note: Media Player
+
   - id: maintenance
     name: Maintenance
     apps:

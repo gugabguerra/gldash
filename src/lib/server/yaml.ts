@@ -11,21 +11,48 @@ export function getConfigPath(): string {
 	return process.env.CONFIG_PATH ?? './config/config.yaml';
 }
 
-/** A safe, empty configuration used when the file is missing or unreadable. */
-function defaultConfig(): Config {
-	return ConfigSchema.parse({});
+/**
+ * Resolves the on-disk location of `config.defaults.yaml`.
+ * Defaults to `./config/config.defaults.yaml`, overridable via `CONFIG_DEFAULTS_PATH`.
+ */
+export function getConfigDefaultsPath(): string {
+	return process.env.CONFIG_DEFAULTS_PATH ?? './config/config.defaults.yaml';
+}
+
+/**
+ * Reads and validates `config.defaults.yaml`.
+ * Used as a fallback template when `config.yaml` is not present,
+ * so a first run after deployment gets meaningful sample data.
+ */
+function readDefaultsConfig(): Config {
+	const path = getConfigDefaultsPath();
+
+	if (!existsSync(path)) {
+		return ConfigSchema.parse({});
+	}
+
+	const raw = readFileSync(path, 'utf-8');
+	const parsed = loadYaml(raw);
+	const result = ConfigSchema.safeParse(parsed ?? {});
+	if (!result.success) {
+		throw new Error(`Config defaults validation failed for "${path}": ${result.error.message}`);
+	}
+
+	return result.data;
 }
 
 /**
  * Reads and validates `config.yaml`.
- * If the file is missing, a default config is created on disk.
+ * If the file is missing, the contents of `config.defaults.yaml` are copied
+ * to `config.yaml` and returned, giving a first run after deployment meaningful
+ * sample data the user can then edit.
  * If the file is malformed, an error is thrown with a descriptive message.
  */
 export function readConfig(): Config {
 	const path = getConfigPath();
 
 	if (!existsSync(path)) {
-		const fallback = defaultConfig();
+		const fallback = readDefaultsConfig();
 		writeConfig(fallback);
 		return fallback;
 	}

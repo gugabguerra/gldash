@@ -3,6 +3,7 @@ node_modules
 build
 .git
 .vscode
-config
+config/config.yaml
+config/*.local.yaml
 *.log
 PROMPTS
