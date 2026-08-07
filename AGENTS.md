@@ -1,3 +1,11 @@
+## Project Configuration
+
+- **Language**: TypeScript
+- **Package Manager**: npm
+- **Add-ons**: none
+
+---
+
 # AGENT INSTRUCTIONS: GLdash Development
 
 You are an expert Senior Full-Stack Engineer and UI/UX Designer specialized in SvelteKit, TypeScript, Tailwind CSS, and Docker infrastructure. Your task is to build **GLdash**, a fast, elegant, and lightweight homelab dashboard and application launcher.
