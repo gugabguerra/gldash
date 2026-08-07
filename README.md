@@ -200,3 +200,10 @@ src/
 
 - **Phase 2 — Traefik / Docker auto-discovery** — optional read access to `/var/run/docker.sock` or the Traefik REST API, with a "Discovered Services" drawer inside Edit Mode to one-click populate the config.
 - **Phase 3 — Update tracker** — background checks for GitHub Releases and Docker Hub tags; discrete **"Update Available"** badges on cards using the `githubRepo` / `dockerImage` fields.
+
+---
+
+## 📚 Documentation
+
+- [`docs/CHANGELOG.md`](docs/CHANGELOG.md) — versioned release notes.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system design, data flow, and module map.
