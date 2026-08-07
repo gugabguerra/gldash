@@ -4,6 +4,8 @@
 	--gl-background: #0f172a;
 	--gl-text: #f8fafc;
 	--gl-card-background: #1e293b;
+	--gl-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 4px rgba(15, 23, 42, 0.1);
+	--gl-shadow-hover: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
 }
 
 html,
@@ -19,3 +21,17 @@ body {
 	background-color: transparent;
 }
 
+/* Subtle card shadow and hover elevation. */
+.card {
+	box-shadow: var(--gl-shadow);
+	transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.card:hover {
+	box-shadow: var(--gl-shadow-hover);
+}
+
+/* Toolbar shadow for depth. */
+.toolbar {
+	box-shadow: var(--gl-shadow);
+}

@@ -5,6 +5,7 @@
 	import EditAppModal from '$lib/components/EditAppModal.svelte';
 	import SettingsDrawer from '$lib/components/SettingsDrawer.svelte';
 	import Spotlight from '$lib/components/Spotlight.svelte';
+	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 
 	let { data } = $props();
 
@@ -15,6 +16,17 @@
 	});
 
 	const theme = $derived(dashboard.config.settings.theme);
+	const backgroundStyle = $derived.by(() => {
+		// Subtle radial gradient overlay for depth — always on top of the background
+		const overlay = `radial-gradient(ellipse at center, rgba(45, 5, 66, 0.08) 0%, transparent 60%), radial-gradient(circle at 15% 25%, rgba(30, 41, 59, 0.04) 0%, transparent 40%), radial-gradient(circle at 85% 75%, rgba(30, 41, 59, 0.04) 0%, transparent 40%)`;
+		const image = theme.backgroundImage;
+		const color = theme.background;
+		const vars = `--gl-background:${color}; --gl-text:${theme.textColor}; --gl-card-background:${theme.cardBackground};`;
+		if (image) {
+			return `${vars} background-image: ${overlay}, url('${image}'); background-color: ${color};`;
+		}
+		return `${vars} background-image: ${overlay}; background-color: ${color};`;
+	});
 </script>
 
 <svelte:head>
@@ -30,13 +42,13 @@
 	</div>
 {:else}
 	<div
-		style={`--gl-background:${theme.background}; --gl-text:${theme.textColor}; --gl-card-background:${theme.cardBackground};`}
-		class="min-h-screen bg-[var(--gl-background)] text-[var(--gl-text)]"
+		style={backgroundStyle}
+		class="min-h-screen bg-[var(--gl-background)] text-[var(--gl-text)] bg-cover bg-center bg-fixed bg-no-repeat"
 	>
 		<Toolbar />
 
 		<main class="mx-auto max-w-6xl px-6 py-6">
-			{#each dashboard.config.categories as category, categoryIndex (category.name + categoryIndex)}
+			{#each dashboard.config.categories as category, categoryIndex (category.id ?? category.name + categoryIndex)}
 				<CategorySection
 					{categoryIndex}
 					name={category.name}
@@ -54,5 +66,6 @@
 		<EditAppModal />
 		<SettingsDrawer />
 		<Spotlight />
+		<ConfirmDialog />
 	</div>
 {/if}

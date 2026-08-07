@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { X } from '@lucide/svelte';
+	import { X, Upload, Trash2 } from '@lucide/svelte';
 	import { dashboard } from '$lib/state/dashboard.svelte';
 
 	let newCategoryName = $state('');
+	let bgFileInput = $state<HTMLInputElement | null>(null);
 
 	function onClose() {
 		dashboard.closeSettings();
@@ -23,6 +24,39 @@
 		if (!name) return;
 		await dashboard.addCategory(name);
 		newCategoryName = '';
+	}
+
+	async function onUploadBackground(e: Event) {
+		const input = e.target as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+
+		const formData = new FormData();
+		formData.append('image', file);
+
+		const response = await fetch('/api/background', {
+			method: 'POST',
+			body: formData
+		});
+
+		if (!response.ok) {
+			const body = await response.json().catch(() => ({ message: 'Upload failed' }));
+			dashboard.error = body.message ?? 'Failed to upload background image.';
+			return;
+		}
+
+		const result = await response.json();
+		if (result.url) {
+			dashboard.config.settings.theme.backgroundImage = result.url;
+			await dashboard.save();
+		}
+		input.value = '';
+	}
+
+	async function onRemoveBackground() {
+		await fetch('/api/background', { method: 'DELETE' });
+		delete dashboard.config.settings.theme.backgroundImage;
+		await dashboard.save();
 	}
 </script>
 
@@ -83,7 +117,7 @@
 								class="h-7 w-14 cursor-pointer rounded border border-slate-700/50 bg-transparent"
 							/>
 						</label>
-						<label class="flex items-center justify-between text-xs text-slate-400">
+												<label class="flex items-center justify-between text-xs text-slate-400">
 							Card Background
 							<input
 								type="color"
@@ -92,7 +126,66 @@
 								class="h-7 w-14 cursor-pointer rounded border border-slate-700/50 bg-transparent"
 							/>
 						</label>
+
+						<div>
+							<span class="mb-2 block text-xs text-slate-400">Background Image</span>
+							<input
+								type="file"
+								bind:this={bgFileInput}
+								accept="image/*"
+								class="hidden"
+								onchange={onUploadBackground}
+							/>
+							{#if dashboard.config.settings.theme.backgroundImage}
+								<div class="mb-2 flex items-center gap-2">
+									<img
+										src={dashboard.config.settings.theme.backgroundImage}
+										alt="Background preview"
+										class="h-12 w-12 rounded border border-slate-700/50 object-cover"
+									/>
+									<button
+										onclick={onRemoveBackground}
+										class="flex items-center gap-1 rounded-md border border-red-500/50 px-2 py-1 text-xs text-red-300 transition-all duration-150 hover:bg-red-900/30"
+									>
+										<Trash2 size={12} /> Remove
+									</button>
+								</div>
+							{:else}
+								<button
+									onclick={() => bgFileInput?.click()}
+									class="flex w-full items-center justify-center gap-1 rounded-md border border-slate-700/50 px-3 py-1.5 text-sm text-slate-300 transition-all duration-150 hover:border-slate-500/50"
+								>
+									<Upload size={12} /> Upload Image
+								</button>
+								<p class="mt-1 text-xs opacity-75">Max 5 MB • JPEG, PNG, WebP</p>
+							{/if}
+						</div>
 					</div>
+				</div>
+
+				<div>
+					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Manage Categories</h3>
+					{#if dashboard.config.categories.length === 0}
+						<p class="text-xs opacity-75">No categories yet.</p>
+					{:else}
+						<div class="flex flex-col gap-2">
+							{#each dashboard.config.categories as category, index (category.id ?? category.name + index)}
+								<div class="flex items-center justify-between rounded-md border border-slate-700/50 px-2 py-1.5 text-sm">
+									<div class="flex flex-col">
+										<span class="text-slate-200">{category.name}</span>
+										<span class="text-xs text-slate-500">{category.apps.length} apps</span>
+									</div>
+									<button
+										onclick={() => dashboard.removeCategory(index)}
+										class="flex items-center justify-center rounded p-1 text-slate-400 hover:bg-red-900/30 hover:text-red-300"
+										aria-label={`Delete category ${category.name}`}
+									>
+										<Trash2 size={12} />
+									</button>
+								</div>
+							{/each}
+						</div>
+					{/if}
 				</div>
 
 				<div>

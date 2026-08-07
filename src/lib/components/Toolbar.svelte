@@ -20,7 +20,7 @@
 </script>
 
 <header
-	class="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-slate-700/50 bg-[var(--gl-background)]/95 px-6 py-3 backdrop-blur-sm"
+	class="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-slate-700/50 bg-[var(--gl-background)]/95 toolbar px-6 py-3 backdrop-blur-sm"
 >
 	<h1 class="text-base font-bold tracking-tight">GLdash</h1>
 

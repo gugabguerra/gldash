@@ -14,6 +14,7 @@ export const AppSchema = z.object({
 });
 
 export const CategorySchema = z.object({
+	id: z.string().min(1).optional().default(() => crypto.randomUUID()),
 	name: z.string().min(1),
 	apps: z.array(AppSchema).default([])
 });
@@ -21,7 +22,8 @@ export const CategorySchema = z.object({
 export const ThemeSchema = z.object({
 	background: z.string().default('#0f172a'),
 	textColor: z.string().default('#f8fafc'),
-	cardBackground: z.string().default('#1e293b')
+	cardBackground: z.string().default('#1e293b'),
+	backgroundImage: z.string().optional().describe('Path to a locally stored background image, relative to static/')
 });
 
 export const SettingsSchema = z.object({

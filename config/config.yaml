@@ -2,11 +2,13 @@ settings:
   layout: grid
   columns: 4
   theme:
-    background: '#0f172a'
+    background: '#37313a'
     textColor: '#f8fafc'
     cardBackground: '#1e293b'
+    backgroundImage: /api/background/image
 categories:
-  - name: Infraestrutura
+  - id: infra-01
+    name: Infraestrutura
     apps:
       - id: pihole-01
         title: Pi-hole
@@ -15,6 +17,9 @@ categories:
         note: DNS Primário da Rede
         githubRepo: pi-hole/pi-hole
         dockerImage: pihole/pihole
+  - id: b58cfaa3-d676-4773-a223-a595d0c43052
+    name: Test Cat
+    apps:
       - id: traefik-01
         title: Traefik
         url: http://192.168.1.10:8080
@@ -22,12 +27,3 @@ categories:
         note: Reverse Proxy
         githubRepo: traefik/traefik
         dockerImage: traefik
-  - name: Media
-    apps:
-      - id: jellyfin-01
-        title: Jellyfin
-        url: http://192.168.1.11:8096
-        icon: simple-icons:jellyfin
-        note: Media Server
-        githubRepo: jellyfin/jellyfin
-        dockerImage: jellyfin/jellyfin

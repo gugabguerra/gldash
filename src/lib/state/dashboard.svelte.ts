@@ -7,6 +7,16 @@ export interface AppRef {
 	appIndex: number;
 }
 
+/** Describes the state of the confirmation dialog used for destructive actions. */
+export interface ConfirmDialogState {
+	title: string;
+	message: string;
+	confirmLabel?: string;
+	cancelLabel?: string;
+	destructive?: boolean;
+	onConfirm: () => void;
+}
+
 /**
  * Central, module-level reactive store for the dashboard.
  * Holds the live configuration, UI mode flags, and persistence logic.
@@ -19,6 +29,7 @@ class DashboardState {
 	spotlightOpen = $state(false);
 	settingsOpen = $state(false);
 	editingApp = $state<AppRef | null>(null);
+	confirmDialog = $state<ConfirmDialogState | null>(null);
 
 	/** Hydrates the store with server-loaded configuration. */
 	init(config: Config) {
@@ -46,6 +57,16 @@ class DashboardState {
 
 	closeSettings() {
 		this.settingsOpen = false;
+	}
+
+	/** Shows the global confirmation dialog. */
+	confirm(dialog: ConfirmDialogState) {
+		this.confirmDialog = dialog;
+	}
+
+	/** Dismisses the global confirmation dialog. */
+	closeConfirm() {
+		this.confirmDialog = null;
 	}
 
 	startEditingApp(ref: AppRef) {
@@ -117,14 +138,39 @@ class DashboardState {
 
 	/** Adds a new empty category. */
 	async addCategory(name: string) {
-		this.config.categories.push({ name, apps: [] });
+		this.config.categories.push({ id: crypto.randomUUID(), name, apps: [] });
 		await this.save();
 	}
 
-	/** Removes a category entirely. */
+	/** Removes a category entirely (after confirmation). */
 	async removeCategory(categoryIndex: number) {
-		this.config.categories.splice(categoryIndex, 1);
-		await this.save();
+		const category = this.config.categories[categoryIndex];
+		if (!category) return;
+
+		// Safety: never delete a category that still has apps.
+		if (category.apps.length > 0) {
+			this.confirm({
+				title: 'Cannot Delete Category',
+				message: `Move or delete the ${category.apps.length} app(s) in "${category.name}" before removing it.`,
+				confirmLabel: 'OK',
+				destructive: false,
+				onConfirm: () => {}
+			});
+			return;
+		}
+
+		// Confirmation dialog for the actual deletion.
+		this.confirm({
+			title: 'Delete Category?',
+			message: `Permanently remove the category "${category.name}"? This action cannot be undone.`,
+			confirmLabel: 'Delete',
+			cancelLabel: 'Cancel',
+			destructive: true,
+			onConfirm: () => {
+				this.config.categories.splice(categoryIndex, 1);
+				this.save();
+			}
+		});
 	}
 }
 

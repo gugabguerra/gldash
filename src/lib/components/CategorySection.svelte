@@ -42,6 +42,10 @@
 		5: 'sm:grid-cols-2 lg:grid-cols-5',
 		6: 'sm:grid-cols-2 lg:grid-cols-6'
 	};
+
+	const dndType = 'gldash-apps';
+	const dropTargetStyle = { outline: '2px dashed rgba(148, 163, 184, 0.6)', outlineOffset: '2px' };
+	const emptyClass = $derived(apps.length === 0 ? 'min-h-[80px]' : '');
 </script>
 
 <section class="mb-8">
@@ -66,43 +70,88 @@
 	</div>
 
 	{#if layout === 'table'}
-		<div
-			class="flex flex-col gap-2"
-			use:dndzone={{ items: apps, flipDurationMs, dragDisabled: !dashboard.editMode }}
-			onconsider={handleConsider}
-			onfinalize={handleFinalize}
-		>
-			{#each apps as app (app.id)}
-				<div animate:flip={{ duration: flipDurationMs }}>
-					<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} dense />
+		<div class="relative">
+			{#if apps.length === 0}
+				<div
+					class="pointer-events-none absolute inset-x-0 top-0 z-10 flex min-h-[80px] items-center justify-center rounded-md border-2 border-dashed border-slate-700/50 text-xs text-slate-500"
+				>
+					{dashboard.editMode ? 'Drag apps here' : 'No apps'}
 				</div>
-			{/each}
+			{/if}
+			<div
+				class={`flex flex-col gap-2 ${emptyClass}`}
+				use:dndzone={{
+					items: apps,
+					type: dndType,
+					flipDurationMs,
+					dragDisabled: !dashboard.editMode,
+					dropTargetStyle
+				}}
+				onconsider={handleConsider}
+				onfinalize={handleFinalize}
+			>
+				{#each apps as app (app.id)}
+					<div animate:flip={{ duration: flipDurationMs }}>
+						<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} dense />
+					</div>
+				{/each}
+			</div>
 		</div>
 	{:else if layout === 'fluid'}
-		<div
-			class="flex flex-wrap gap-4"
-			use:dndzone={{ items: apps, flipDurationMs, dragDisabled: !dashboard.editMode }}
-			onconsider={handleConsider}
-			onfinalize={handleFinalize}
-		>
-			{#each apps as app (app.id)}
-				<div class="w-56" animate:flip={{ duration: flipDurationMs }}>
-					<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} />
+		<div class="relative">
+			{#if apps.length === 0}
+				<div
+					class="pointer-events-none absolute inset-x-0 top-0 z-10 flex min-h-[80px] items-center justify-center rounded-lg border-2 border-dashed border-slate-700/50 text-xs text-slate-500"
+				>
+					{dashboard.editMode ? 'Drag apps here' : 'No apps'}
 				</div>
-			{/each}
+			{/if}
+			<div
+				class={`flex flex-wrap min-h-[80px] gap-4`}
+				use:dndzone={{
+					items: apps,
+					type: dndType,
+					flipDurationMs,
+					dragDisabled: !dashboard.editMode,
+					dropTargetStyle
+				}}
+				onconsider={handleConsider}
+				onfinalize={handleFinalize}
+			>
+				{#each apps as app (app.id)}
+					<div class="w-56" animate:flip={{ duration: flipDurationMs }}>
+						<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} />
+					</div>
+				{/each}
+			</div>
 		</div>
 	{:else}
-		<div
-			class={`grid grid-cols-1 gap-4 ${gridColsClass[columns] ?? gridColsClass[4]}`}
-			use:dndzone={{ items: apps, flipDurationMs, dragDisabled: !dashboard.editMode }}
-			onconsider={handleConsider}
-			onfinalize={handleFinalize}
-		>
-			{#each apps as app (app.id)}
-				<div animate:flip={{ duration: flipDurationMs }}>
-					<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} />
+		<div class="relative">
+			{#if apps.length === 0}
+				<div
+					class="pointer-events-none absolute inset-x-0 top-0 z-10 flex min-h-[80px] items-center justify-center rounded-lg border-2 border-dashed border-slate-700/50 text-xs text-slate-500"
+				>
+					{dashboard.editMode ? 'Drag apps here' : 'No apps'}
 				</div>
-			{/each}
+			{/if}
+			<div
+				class={`grid grid-cols-1 gap-4 ${gridColsClass[columns] ?? gridColsClass[4]} ${emptyClass}`}
+				use:dndzone={{
+					items: apps,
+					type: dndType,
+					flipDurationMs,
+					dragDisabled: !dashboard.editMode,
+					dropTargetStyle
+				}}
+				onconsider={handleConsider}
+				onfinalize={handleFinalize}
+			>
+				{#each apps as app (app.id)}
+					<div animate:flip={{ duration: flipDurationMs }}>
+						<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} />
+					</div>
+				{/each}
+			</div>
 		</div>
 	{/if}
 </section>

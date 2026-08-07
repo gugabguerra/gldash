@@ -1,69 +1,182 @@
 # GLdash
 
-A fast, elegant, and lightweight homelab dashboard and application launcher, built with SvelteKit 5, TypeScript, and Tailwind CSS 4.
+A **fast, elegant, and lightweight homelab dashboard and application launcher**. GLdash turns a single YAML file into a beautiful, installable dashboard for all your self-hosted services — with drag-and-drop organization, real-time theming, a spotlight quick-launcher, and a responsive set of views.
 
-## Features (Phase 1)
+Built with **SvelteKit 5 (runes)**, **TypeScript (strict)**, **Tailwind CSS v4**, and **Zod**, designed to run anywhere: bare-metal Node, Docker, or a NAS box.
 
-- **YAML-backed configuration** — validated end-to-end with Zod, read/written via `GET`/`POST /api/config`.
-- **Multiple layouts** — Grid (2–6 columns), Fluid, and Table/List views.
-- **Theme customizer** — background, text, and card colors persisted to `config.yaml`.
-- **Edit Mode** — drag-and-drop reordering (within and across categories), per-app edit modal, add/remove apps and categories.
-- **Smart icon resolution** — `lucide:<name>`, `simple-icons:<slug>`, direct image URLs, or an automatic favicon fallback.
-- **Spotlight search** — `Cmd/Ctrl + K` quick launcher.
-- **PWA** — installable, offline app-shell caching via `@vite-pwa/sveltekit`.
+---
 
-## Development
+## ✨ Features
+
+### Dashboard & Layouts
+- **Three layout modes** — switchable from the toolbar:
+  - **Grid** — responsive card grid with an editable column count (2–6).
+  - **Fluid** — auto-fitting flex/masonry layout that fills the width.
+  - **Table/List** — dense rows for fast, at-a-glance scanning.
+- **Categories** organize apps into labeled sections.
+- **Edit Mode** — toggle editing, then:
+  - **Drag-and-drop reordering** of cards within and across categories (`svelte-dnd-action`).
+  - **Per-app edit modal** — title, URL, icon, note, linked GitHub repo and Docker image.
+  - Add / remove **apps and categories**.
+
+### Theming & Background Image
+- **Theme Customizer** — change background, text, and card colors **in real time**, persisted straight to `config.yaml`.
+- **Background image upload** — upload a JPEG/PNG/WebP (≤ 5 MB). It is stored on the server and served via `/api/background/image`, so it works in both dev and the Node production build (*not* baked into the static manifest). Subtle radial-gradient overlay keeps cards readable.
+- Clean neutral **slate/zinc** palette, discrete 1px borders, and 150 ms micro-interactions — no "AI slop" gradients or glassmorphism.
+
+### Smart Icons
+Icons resolve in priority order:
+1. **Lucide** — e.g. `lucide:server` (rendered inline).
+2. **Simple Icons** — e.g. `simple-icons:grafana`, served **server-side** from the `simple-icons` package via `GET /api/icons/simple-icons/[slug]` (keeps the large icon dataset out of the client bundle).
+3. **Direct image URL** — any `http(s)://...` or local path.
+4. **Automatic fallback** — domain favicon (`google.com/s2/favicons`).
+
+### Productivity & PWA
+- **Spotlight / Quick Search** — open with `Cmd/Ctrl + K`, keyboard-navigable, matched across title, note, and URL.
+- **PWA** — installable on iOS/Android/desktop with offline app-shell caching (`@vite-pwa/sveltekit` + Workbox).
+
+---
+
+## 🧰 Tech Stack
+
+| Layer       | Technology                                        |
+| ----------- | ------------------------------------------------- |
+| Framework   | SvelteKit 5 (runes) + Svelte 5                    |
+| Language    | TypeScript (strict)                               |
+| Styling     | Tailwind CSS v4 + Lucide icons (`@lucide/svelte`) |
+| Icons       | `simple-icons` (server-served SVGs)               |
+| Data/config | `js-yaml` (parsing/writing) + `zod` (validation)  |
+| Drag & drop | `svelte-dnd-action`                               |
+| Images      | `sharp` (background image processing)             |
+| PWA         | `@vite-pwa/sveltekit`                             |
+| Runtime     | Node.js (via `@sveltejs/adapter-node`)            |
+
+---
+
+## 🚀 Getting Started
+
+### Local development
 
 ```sh
 npm install
 npm run dev -- --open
 ```
 
-The dashboard reads/writes `./config/config.yaml` by default. Override the location with `CONFIG_PATH`:
+The dashboard reads/writes `./config/config.yaml` by default. Override the location with the `CONFIG_PATH` environment variable:
 
 ```sh
 CONFIG_PATH=/path/to/config.yaml npm run dev
 ```
 
-## Configuration Schema
-
-```yaml
-settings:
-  layout: "grid" # "grid" | "fluid" | "table"
-  columns: 4 # 2 to 6
-  theme:
-    background: "#0f172a"
-    textColor: "#f8fafc"
-    cardBackground: "#1e293b"
-
-categories:
-  - name: "Infraestrutura"
-    apps:
-      - id: "pihole-01"
-        title: "Pi-hole"
-        url: "http://192.168.1.10/admin"
-        icon: "simple-icons:pihole"
-        note: "DNS Primário da Rede"
-        githubRepo: "pi-hole/pi-hole" # reserved for Phase 3
-        dockerImage: "pihole/pihole" # reserved for Phase 3
-```
-
-## Building & Type Checking
+### Type checking & build
 
 ```sh
-npm run build
-npm run check
+npm run check        # svelte-check (strict TypeScript)
+npm run build        # production build (adapter-node)
+npm run preview      # preview the production build
 ```
 
-## Docker
+---
+
+## 🐳 Docker
+
+### Docker Compose (recommended)
 
 ```sh
 docker compose up -d --build
 ```
 
-This builds the multi-stage `Dockerfile` (Node 22 Alpine), exposes port `3000`, and mounts `./config` into the container so your dashboard configuration persists across restarts.
+This builds the **multi-stage Dockerfile** (`node:22-alpine`), exposes port `3000`, and mounts `./config` into the container so your dashboard configuration persists across restarts.
 
-## Roadmap
+### Manual build
 
-- **Phase 2** — Traefik / Docker auto-discovery staging area inside Edit Mode.
-- **Phase 3** — GitHub Releases & Docker Hub update-availability badges.
+```sh
+docker build -t gldash .
+docker run -d \
+  -p 3000:3000 \
+  -v "$PWD/config:/app/config" \
+  -e CONFIG_PATH=/app/config/config.yaml \
+  gldash
+```
+
+Set the `PORT` environment variable to change the listening port.
+
+---
+
+## 📄 Configuration Schema
+
+All data is validated with **Zod** on every read and write. A minimal `config.yaml`:
+
+```yaml
+settings:
+  layout: "grid"          # "grid" | "fluid" | "table"
+  columns: 4              # integer, 2 to 6 (grid layout)
+  theme:
+    background: "#0f172a"
+    textColor: "#f8fafc"
+    cardBackground: "#1e293b"
+    backgroundImage: "/api/background/image"   # set after an upload
+
+categories:
+  - id: "infra-01"                # optional, auto-generated if omitted
+    name: "Infraestrutura"
+    apps:
+      - id: "pihole-01"
+        title: "Pi-hole"
+        url: "http://192.168.1.10/admin"
+        icon: "simple-icons:pihole"    # lucide:* | simple-icons:* | URL | fallback
+        note: "DNS Primário da Rede"
+        githubRepo: "pi-hole/pi-hole"  # reserved for Phase 3 (update badges)
+        dockerImage: "pihole/pihole"   # reserved for Phase 3
+```
+
+### Icon resolution
+
+| Format                   | Example                              | Renders as                          |
+| ------------------------ | ------------------------------------ | ----------------------------------- |
+| Lucide                   | `lucide:server`                      | Inline Lucide icon                  |
+| Simple Icons (brand)     | `simple-icons:grafana`                | Server-side SVG (`/api/icons/...`)  |
+| Direct URL / local path  | `https://…/icon.png` or `/icons/x`    | Rendered `<img>`                    |
+| *(none / unknown)*       | *(auto)*                             | Domain favicon (`google.com/s2/favicons`) |
+
+---
+
+## 🔌 API Reference
+
+| Method   | Route                              | Description                                            |
+| -------- | ---------------------------------- | ------------------------------------------------------ |
+| `GET`    | `/api/config`                      | Returns the validated config as JSON.                  |
+| `POST`   | `/api/config`                      | Validates with Zod and writes the config back to YAML. |
+| `POST`   | `/api/background`                  | Uploads a background image (multipart field `image`).  |
+| `GET`    | `/api/background/image`            | Serves the current background image.                   |
+| `DELETE` | `/api/background`                  | Removes the current background image.                  |
+| `GET`    | `/api/icons/simple-icons/<slug>`   | Serves a brand SVG by Simple Icons slug.               |
+
+---
+
+## 🧱 Project Structure
+
+```
+src/
+├── lib/
+│   ├── components/       # AppShell, AppCard, CategorySection, Toolbar,
+│   │                     # SettingsDrawer, EditAppModal, ConfirmDialog, Spotlight...
+│   ├── server/           # yaml engine, background helpers
+│   ├── state/            # dashboard.svelte.ts (reactive global state)
+│   └── types.ts          # Zod schemas + exported TS types
+└── routes/
+    ├── +page.svelte      # dashboard shell
+    ├── +layout.svelte    # root layout
+    └── api/
+        ├── config/       # GET/POST config
+        ├── background/   # POST upload, DELETE
+        │   └── image/    # GET serve current image
+        └── icons/simple-icons/[slug]/   # server-side brand SVGs
+```
+
+---
+
+## 🗺️ Roadmap
+
+- **Phase 2 — Traefik / Docker auto-discovery** — optional read access to `/var/run/docker.sock` or the Traefik REST API, with a "Discovered Services" drawer inside Edit Mode to one-click populate the config.
+- **Phase 3 — Update tracker** — background checks for GitHub Releases and Docker Hub tags; discrete **"Update Available"** badges on cards using the `githubRepo` / `dockerImage` fields.

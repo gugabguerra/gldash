@@ -1,4 +1,13 @@
+PROMPTS/
+
 node_modules
+
+# AI / Editor configuration
+.opencode/
+
+# Runtime-written background images (keep the placeholder)
+static/backgrounds/*
+!static/backgrounds/.gitkeep
 
 # Output
 .output

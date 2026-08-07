@@ -30,7 +30,7 @@
 		href={app.url}
 		target="_blank"
 		rel="noreferrer"
-		class="group flex items-center gap-3 rounded-md border border-slate-700/50 bg-[var(--gl-card-background)] px-3 py-2 transition-all duration-150 hover:border-slate-500/50"
+		class="group flex items-center gap-3 rounded-md border border-slate-700/50 bg-[var(--gl-card-background)] card px-3 py-2 transition-all duration-150 hover:border-slate-500/50"
 	>
 		<AppIcon icon={app.icon} url={app.url} size={20} />
 		<span class="flex-1 truncate text-sm font-medium">{app.title}</span>
@@ -61,7 +61,7 @@
 		href={app.url}
 		target="_blank"
 		rel="noreferrer"
-		class="group relative flex flex-col gap-3 rounded-lg border border-slate-700/50 bg-[var(--gl-card-background)] p-4 transition-all duration-150 hover:border-slate-500/50"
+		class="group relative flex flex-col gap-3 rounded-lg border border-slate-700/50 bg-[var(--gl-card-background)] card p-4 transition-all duration-150 hover:border-slate-500/50"
 	>
 		{#if dashboard.editMode}
 			<div class="absolute right-2 top-2 flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
