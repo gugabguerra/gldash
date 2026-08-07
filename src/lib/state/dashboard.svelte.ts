@@ -1,5 +1,5 @@
 import type { App, Config } from '$lib/types';
-import { ConfigSchema } from '$lib/types';
+import { ConfigSchema, DEFAULT_THEME } from '$lib/types';
 
 /** Identifies a single app's position within the categories tree. */
 export interface AppRef {
@@ -101,6 +101,21 @@ class DashboardState {
 		} finally {
 			this.saving = false;
 		}
+	}
+
+	/** Resets theme colors and reverts to the default background image. */
+	async resetTheme() {
+		// Best-effort cleanup of any uploaded background file on the server.
+		await fetch('/api/background', { method: 'DELETE' }).catch(() => {});
+
+		const theme = this.config.settings.theme;
+		theme.background = DEFAULT_THEME.background;
+		theme.textColor = DEFAULT_THEME.textColor;
+		theme.cardBackground = DEFAULT_THEME.cardBackground;
+		theme.backgroundImage = undefined;
+		theme.backgroundMode = 'default';
+
+		await this.save();
 	}
 
 	/** Updates a single app in place, then persists the change. */

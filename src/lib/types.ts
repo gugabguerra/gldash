@@ -19,27 +19,62 @@ export const CategorySchema = z.object({
 	apps: z.array(AppSchema).default([])
 });
 
-export const ThemeSchema = z.object({
-	background: z.string().default('#0f172a'),
-	textColor: z.string().default('#f8fafc'),
-	cardBackground: z.string().default('#1e293b'),
-	backgroundImage: z.string().optional().describe('Path to a locally stored background image, relative to static/')
-});
+/** Built-in default theme colors. Restored by the "Restore Defaults" action. */
+export const DEFAULT_THEME = {
+	background: '#0f172a',
+	textColor: '#f8fafc',
+	cardBackground: '#1e293b'
+} as const;
+
+/** How the dashboard background is rendered. */
+export const backgroundModes = ['default', 'custom', 'solid'] as const;
+export type BackgroundMode = (typeof backgroundModes)[number];
+
+/** Server URL that serves the default background image from the config dir. */
+export const BACKGROUND_DEFAULT_URL = '/api/background/default';
+
+export const ThemeSchema = z
+	.object({
+		background: z.string().default(DEFAULT_THEME.background),
+		textColor: z.string().default(DEFAULT_THEME.textColor),
+		cardBackground: z.string().default(DEFAULT_THEME.cardBackground),
+		backgroundImage: z.string().optional(),
+		backgroundMode: z.enum(backgroundModes).optional()
+	})
+	.transform((theme) => ({
+		...theme,
+		// Migrate legacy configs: an existing image URL implies "custom";
+		// otherwise default to the default background image.
+		backgroundMode: theme.backgroundMode ?? (theme.backgroundImage ? 'custom' : 'default')
+	}));
+
+/** A validated theme with an always-present background mode. */
+export type Theme = z.infer<typeof ThemeSchema>;
+
+const defaultThemeValue: Theme = {
+	background: DEFAULT_THEME.background,
+	textColor: DEFAULT_THEME.textColor,
+	cardBackground: DEFAULT_THEME.cardBackground,
+	backgroundMode: 'default'
+};
 
 export const SettingsSchema = z.object({
 	layout: z.enum(layoutOptions).default('grid'),
 	columns: z.number().int().min(2).max(6).default(4),
-	theme: ThemeSchema.default(ThemeSchema.parse({}))
+	theme: ThemeSchema.default(defaultThemeValue)
 });
 
 export const ConfigSchema = z.object({
-	settings: SettingsSchema.default(SettingsSchema.parse({})),
+	settings: SettingsSchema.default({
+		layout: 'grid',
+		columns: 4,
+		theme: defaultThemeValue
+	}),
 	categories: z.array(CategorySchema).default([])
 });
 
 export type App = z.infer<typeof AppSchema>;
 export type Category = z.infer<typeof CategorySchema>;
-export type Theme = z.infer<typeof ThemeSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;
 export type Config = z.infer<typeof ConfigSchema>;
 export type LayoutMode = (typeof layoutOptions)[number];

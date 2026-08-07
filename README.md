@@ -21,7 +21,12 @@ Built with **SvelteKit 5 (runes)**, **TypeScript (strict)**, **Tailwind CSS v4**
 
 ### Theming & Background Image
 - **Theme Customizer** — change background, text, and card colors **in real time**, persisted straight to `config.yaml`.
-- **Background image upload** — upload a JPEG/PNG/WebP (≤ 5 MB). It is stored on the server and served via `/api/background/image`, so it works in both dev and the Node production build (*not* baked into the static manifest). Subtle radial-gradient overlay keeps cards readable.
+- **Background image** with three selectable modes (in Settings → Theme):
+  - **Default** — ships with `config/default-bg.jpg` (edit or mount that file to change it; served via `/api/background/default`).
+  - **Custom** — upload a JPEG/PNG/WebP (≤ 5 MB); stored on the server and served via `/api/background/image`, so it works in dev and the Node production build (*not* baked into the static manifest).
+  - **Solid** — plain color + gradient overlay, no image.
+- **Restore Default Styling** — one-click (with confirmation) reset of the theme colors and a return to the default background image; layout and column count are untouched.
+- Subtle radial-gradient overlay keeps cards readable on any image.
 - Clean neutral **slate/zinc** palette, discrete 1px borders, and 150 ms micro-interactions — no "AI slop" gradients or glassmorphism.
 
 ### Smart Icons
@@ -115,7 +120,8 @@ settings:
     background: "#0f172a"
     textColor: "#f8fafc"
     cardBackground: "#1e293b"
-    backgroundImage: "/api/background/image"   # set after an upload
+    backgroundMode: "default"        # "default" | "custom" | "solid"
+    backgroundImage: ""              # set to the uploaded image URL when custom
 
 categories:
   - id: "infra-01"                # optional, auto-generated if omitted
@@ -148,8 +154,9 @@ categories:
 | `GET`    | `/api/config`                      | Returns the validated config as JSON.                  |
 | `POST`   | `/api/config`                      | Validates with Zod and writes the config back to YAML. |
 | `POST`   | `/api/background`                  | Uploads a background image (multipart field `image`).  |
-| `GET`    | `/api/background/image`            | Serves the current background image.                   |
-| `DELETE` | `/api/background`                  | Removes the current background image.                  |
+| `GET`    | `/api/background/default`          | Serves the shipped default image (`config/default-bg.jpg`). |
+| `GET`    | `/api/background/image`            | Serves the current custom (uploaded) background image. |
+| `DELETE` | `/api/background`                  | Removes the uploaded background image.                |
 | `GET`    | `/api/icons/simple-icons/<slug>`   | Serves a brand SVG by Simple Icons slug.               |
 
 ---

@@ -25,3 +25,14 @@ export async function getBackgroundFile(): Promise<string | null> {
 	const bgFile = files.find((f) => f.startsWith('bg-'));
 	return bgFile ? path.join(dir, bgFile) : null;
 }
+
+/** Maps a file extension (without the leading dot) to its image MIME type. */
+export function mimeForExtension(ext: string): string {
+	const mime: Record<string, string> = {
+		jpg: 'image/jpeg',
+		jpeg: 'image/jpeg',
+		png: 'image/png',
+		webp: 'image/webp'
+	};
+	return mime[ext.toLowerCase()] ?? 'application/octet-stream';
+}

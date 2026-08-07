@@ -1,7 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { getBackgroundFile } from '$lib/server/background';
+import { getBackgroundFile, mimeForExtension } from '$lib/server/background';
 
 /**
  * GET /api/background/image
@@ -18,11 +18,9 @@ export const GET: RequestHandler = async () => {
 
 	try {
 		const buffer = await readFile(filepath);
-		const ext = path.extname(filepath).slice(1);
-		const mime = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp' }[ext] ?? 'application/octet-stream';
 		return new Response(buffer, {
 			headers: {
-				'Content-Type': mime,
+				'Content-Type': mimeForExtension(path.extname(filepath).slice(1)),
 				'Cache-Control': 'public, max-age=86400, immutable'
 			}
 		});

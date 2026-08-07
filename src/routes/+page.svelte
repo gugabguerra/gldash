@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { dashboard } from '$lib/state/dashboard.svelte';
+	import { BACKGROUND_DEFAULT_URL } from '$lib/types';
 	import Toolbar from '$lib/components/Toolbar.svelte';
 	import CategorySection from '$lib/components/CategorySection.svelte';
 	import EditAppModal from '$lib/components/EditAppModal.svelte';
@@ -19,9 +20,12 @@
 	const backgroundStyle = $derived.by(() => {
 		// Subtle radial gradient overlay for depth — always on top of the background
 		const overlay = `radial-gradient(ellipse at center, rgba(45, 5, 66, 0.08) 0%, transparent 60%), radial-gradient(circle at 15% 25%, rgba(30, 41, 59, 0.04) 0%, transparent 40%), radial-gradient(circle at 85% 75%, rgba(30, 41, 59, 0.04) 0%, transparent 40%)`;
-		const image = theme.backgroundImage;
 		const color = theme.background;
 		const vars = `--gl-background:${color}; --gl-text:${theme.textColor}; --gl-card-background:${theme.cardBackground};`;
+		// 'solid' → no image, just the color + gradient; otherwise use the
+		// custom upload, falling back to the shipped default image.
+		const image =
+			theme.backgroundMode === 'solid' ? null : theme.backgroundImage ?? BACKGROUND_DEFAULT_URL;
 		if (image) {
 			return `${vars} background-image: ${overlay}, url('${image}'); background-color: ${color};`;
 		}
