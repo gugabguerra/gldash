@@ -1,0 +1,21 @@
+@import 'tailwindcss';
+
+:root {
+	--gl-background: #0f172a;
+	--gl-text: #f8fafc;
+	--gl-card-background: #1e293b;
+}
+
+html,
+body {
+	background-color: var(--gl-background);
+	color: var(--gl-text);
+}
+
+/* Clean, dashed drop-zone placeholder for drag-and-drop reordering. */
+.dnd-placeholder {
+	border: 1px dashed rgb(100 116 139 / 0.5);
+	border-radius: 0.5rem;
+	background-color: transparent;
+}
+

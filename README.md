@@ -1,42 +1,69 @@
-# sv
+# GLdash
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A fast, elegant, and lightweight homelab dashboard and application launcher, built with SvelteKit 5, TypeScript, and Tailwind CSS 4.
 
-## Creating a project
+## Features (Phase 1)
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **YAML-backed configuration** — validated end-to-end with Zod, read/written via `GET`/`POST /api/config`.
+- **Multiple layouts** — Grid (2–6 columns), Fluid, and Table/List views.
+- **Theme customizer** — background, text, and card colors persisted to `config.yaml`.
+- **Edit Mode** — drag-and-drop reordering (within and across categories), per-app edit modal, add/remove apps and categories.
+- **Smart icon resolution** — `lucide:<name>`, `simple-icons:<slug>`, direct image URLs, or an automatic favicon fallback.
+- **Spotlight search** — `Cmd/Ctrl + K` quick launcher.
+- **PWA** — installable, offline app-shell caching via `@vite-pwa/sveltekit`.
 
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-npx sv@0.17.0 create --template minimal --types ts --install npm .
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Development
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
+npm install
 npm run dev -- --open
 ```
 
-## Building
+The dashboard reads/writes `./config/config.yaml` by default. Override the location with `CONFIG_PATH`:
 
-To create a production version of your app:
+```sh
+CONFIG_PATH=/path/to/config.yaml npm run dev
+```
+
+## Configuration Schema
+
+```yaml
+settings:
+  layout: "grid" # "grid" | "fluid" | "table"
+  columns: 4 # 2 to 6
+  theme:
+    background: "#0f172a"
+    textColor: "#f8fafc"
+    cardBackground: "#1e293b"
+
+categories:
+  - name: "Infraestrutura"
+    apps:
+      - id: "pihole-01"
+        title: "Pi-hole"
+        url: "http://192.168.1.10/admin"
+        icon: "simple-icons:pihole"
+        note: "DNS Primário da Rede"
+        githubRepo: "pi-hole/pi-hole" # reserved for Phase 3
+        dockerImage: "pihole/pihole" # reserved for Phase 3
+```
+
+## Building & Type Checking
 
 ```sh
 npm run build
+npm run check
 ```
 
-You can preview the production build with `npm run preview`.
+## Docker
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```sh
+docker compose up -d --build
+```
+
+This builds the multi-stage `Dockerfile` (Node 22 Alpine), exposes port `3000`, and mounts `./config` into the container so your dashboard configuration persists across restarts.
+
+## Roadmap
+
+- **Phase 2** — Traefik / Docker auto-discovery staging area inside Edit Mode.
+- **Phase 3** — GitHub Releases & Docker Hub update-availability badges.

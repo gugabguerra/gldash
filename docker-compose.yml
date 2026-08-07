@@ -1,0 +1,13 @@
+services:
+  gldash:
+    build: .
+    image: gldash:latest
+    container_name: gldash
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - CONFIG_PATH=/app/config/config.yaml
+      - PORT=3000
+    volumes:
+      - ./config:/app/config
