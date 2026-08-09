@@ -6,6 +6,23 @@ Built with **SvelteKit 5 (runes)**, **TypeScript (strict)**, **Tailwind CSS v4**
 
 ---
 
+## 📸 Screenshots
+
+![Dashboard](static/screenshots/dashboard.png)
+
+<div align="center">
+
+[![Settings drawer](static/screenshots/settings.png)](static/screenshots/settings.png)
+[![App editor](static/screenshots/edit-app.png)](static/screenshots/edit-app.png)
+
+</div>
+
+| Icon picker (autocomplete) | Login page |
+| -------------------------- | ---------- |
+| ![Icon picker](static/screenshots/edit-app-icons.png) | ![Login](static/screenshots/login.png) |
+
+---
+
 ## ✨ Features
 
 ### Dashboard & Layouts
