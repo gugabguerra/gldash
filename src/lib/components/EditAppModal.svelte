@@ -2,6 +2,7 @@
 	import { X } from '@lucide/svelte';
 	import { dashboard } from '$lib/state/dashboard.svelte';
 	import type { App } from '$lib/types';
+	import IconCombobox from './IconCombobox.svelte';
 
 	const ref = $derived(dashboard.editingApp);
 	const app = $derived.by<App | null>(() => {
@@ -85,14 +86,12 @@
 						class="rounded-md border border-slate-700/50 bg-transparent px-3 py-1.5 text-sm text-slate-100 outline-none focus:border-slate-500/50"
 					/>
 				</label>
-				<label class="flex flex-col gap-1 text-xs text-slate-400">
-					Icon <span class="opacity-60">(lucide:name, simple-icons:slug, or URL)</span>
-					<input
-						bind:value={form.icon}
-						placeholder="simple-icons:pihole"
-						class="rounded-md border border-slate-700/50 bg-transparent px-3 py-1.5 text-sm text-slate-100 outline-none focus:border-slate-500/50"
-					/>
-				</label>
+				<IconCombobox
+					bind:value={form.icon}
+					label="Icon"
+					hint="lucide:name, simple-icons:slug, or image URL"
+					placeholder="simple-icons:pihole"
+				/>
 				<label class="flex flex-col gap-1 text-xs text-slate-400">
 					Note
 					<input
