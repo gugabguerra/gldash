@@ -3,6 +3,9 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { RequestHandler } from './$types';
 
+const FALLBACK_SVG =
+	'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5Zm0 2h14v14H5V5Zm3 3h8v2H8V8Zm0 4h5v2H8v-2Z"/></svg>';
+
 /**
  * GET /api/icons/simple-icons/[slug]
  *
@@ -27,6 +30,12 @@ export const GET: RequestHandler = async ({ params }) => {
 			}
 		});
 	} catch {
-		error(404, `Icon "${slug}" not found.`);
+		// Unsupported brands remain renderable without falling back to a third-party favicon service.
+		return text(FALLBACK_SVG, {
+			headers: {
+				'Content-Type': 'image/svg+xml',
+				'Cache-Control': 'public, max-age=3600'
+			}
+		});
 	}
 };

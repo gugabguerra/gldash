@@ -49,7 +49,10 @@ export default defineConfig({
 				]
 			},
 			workbox: {
-				globPatterns: ['**/*.{js,css,html,svg,png,ico,webp}']
+				globPatterns: ['**/*.{js,css,html,svg,png,ico,webp}'],
+				// Uploaded backgrounds are runtime data served by /api/background/image.
+				// They must not be added to the finite PWA precache manifest.
+				globIgnores: ['**/backgrounds/**']
 			},
 			devOptions: {
 				enabled: false

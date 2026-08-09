@@ -25,6 +25,7 @@ ENV CONFIG_PATH=/app/config/config.yaml
 COPY --from=build /app/build ./build
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/config/default-bg.jpg ./default-bg.jpg
 
 RUN mkdir -p /app/config /app/static/backgrounds
 COPY --from=build /app/config/config.defaults.yaml /app/config/config.defaults.yaml

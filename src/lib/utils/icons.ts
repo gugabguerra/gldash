@@ -4,8 +4,7 @@ import type { IconProps } from '@lucide/svelte';
 export type ResolvedIcon =
 	| { kind: 'lucide'; component: Component<IconProps> }
 	| { kind: 'simple-icon'; svg: string }
-	| { kind: 'image'; src: string }
-	| { kind: 'favicon'; src: string };
+	| { kind: 'image'; src: string };
 
 /** Converts a slug into kebab-case, matching Lucide's individual icon file names. */
 function toKebabCase(slug: string): string {
@@ -16,12 +15,12 @@ function toKebabCase(slug: string): string {
 		.toLowerCase();
 }
 
-
-
 /** Lazily-loaded map of Lucide icon modules, keyed by kebab-case filename (e.g. "server"). */
 const lucideIconModules = import.meta.glob('/node_modules/@lucide/svelte/dist/icons/*.svelte', {
 	import: 'default'
 }) as Record<string, () => Promise<Component<IconProps>>>;
+
+const resolvedIcons = new Map<string, Promise<ResolvedIcon>>();
 
 /** Dynamically imports a single Lucide icon component by its kebab-case slug. */
 async function loadLucideIcon(slug: string): Promise<Component<IconProps> | null> {
@@ -42,11 +41,20 @@ async function loadLucideIcon(slug: string): Promise<Component<IconProps> | null
  * 1. `lucide:<name>` — a Lucide icon component.
  * 2. `simple-icons:<slug>` — a Simple Icons brand SVG.
  * 3. `http(s)://...` or `/...` — a direct image URL.
- * 4. Fallback — Google's favicon service, derived from the app's URL.
+ * 4. Fallback — the bundled dashboard icon.
  */
 export async function resolveIcon(icon: string | undefined, appUrl: string): Promise<ResolvedIcon> {
 	const value = (icon ?? '').trim();
+	const cacheKey = `${value}\u0000${appUrl}`;
+	const cached = resolvedIcons.get(cacheKey);
+	if (cached) return cached;
 
+	const resolved = resolveIconUncached(value);
+	resolvedIcons.set(cacheKey, resolved);
+	return resolved;
+}
+
+async function resolveIconUncached(value: string): Promise<ResolvedIcon> {
 	if (value.startsWith('lucide:')) {
 		const slug = toKebabCase(value.slice('lucide:'.length));
 		const component = await loadLucideIcon(slug);
@@ -67,7 +75,7 @@ export async function resolveIcon(icon: string | undefined, appUrl: string): Pro
 		return { kind: 'image', src: value };
 	}
 
-	return { kind: 'favicon', src: faviconFallback(appUrl) };
+	return { kind: 'image', src: '/icons/icon-192.png' };
 }
 
 /**
@@ -83,15 +91,5 @@ async function loadSimpleIconSvg(slug: string): Promise<string | null> {
 		return await response.text();
 	} catch {
 		return null;
-	}
-}
-
-/** Builds a favicon URL for a given app URL via Google's public favicon service. */
-export function faviconFallback(appUrl: string): string {
-	try {
-		const { hostname } = new URL(appUrl);
-		return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
-	} catch {
-		return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(appUrl)}&sz=64`;
 	}
 }

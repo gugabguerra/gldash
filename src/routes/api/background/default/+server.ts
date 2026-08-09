@@ -8,17 +8,16 @@ import { mimeForExtension } from '$lib/server/background';
 /**
  * GET /api/background/default
  *
- * Serves the shipped default background image, `config/default-bg.jpg`, living
- * next to `config.yaml`. It is read at request time so that editing the file
- * (or mounting a new one via the Docker volume) takes effect without a rebuild.
- * Returns 404 when the file is absent — the dashboard then falls back to the
- * solid color + gradient overlay.
+ * Serves the default background image. A file next to `config.yaml` overrides
+ * the bundled image, so Docker config mounts can customize it without a rebuild.
  */
 export const GET: RequestHandler = async () => {
-	const filepath = path.join(path.dirname(getConfigPath()), 'default-bg.jpg');
+	const configuredPath = path.join(path.dirname(getConfigPath()), 'default-bg.jpg');
+	const bundledPath = path.join(process.cwd(), 'default-bg.jpg');
+	const filepath = existsSync(configuredPath) ? configuredPath : bundledPath;
 
 	if (!existsSync(filepath)) {
-		return json({ message: 'No default background image set.' }, { status: 404 });
+		return json({ message: 'No default background image is available.' }, { status: 404 });
 	}
 
 	try {
