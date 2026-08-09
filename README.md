@@ -36,6 +36,14 @@ Icons resolve in priority order:
 3. **Direct image URL** — any `http(s)://...` or local path.
 4. **Automatic fallback** — domain favicon (`google.com/s2/favicons`).
 
+### Security & Authentication
+- **Single-admin password login** — the dashboard is locked behind a login page until you set an admin password (bcrypt-hashed, stored in `config.yaml`).
+- **First-run setup** — on the very first visit (no password configured), the login page acts as a setup screen to create the admin password.
+- **JWT sessions** — successful login issues a signed session cookie (`gldash_session`) valid for 72 hours; on the server side a random persistent secret is generated next to `config.yaml` (or use `JWT_SECRET`).
+- **Change password** — from Settings, authenticated with the current password; sessions are refreshed on success.
+- **Recovery** — forgot the password? Empty `auth.adminPasswordHash` in `config.yaml` and restart; the next visit prompts to set a new one.
+- **Logout** — clears the session cookie.
+
 ### Productivity & PWA
 - **Spotlight / Quick Search** — open with `Cmd/Ctrl + K`, keyboard-navigable, matched across title, note, and URL.
 - **PWA** — installable on iOS/Android/desktop with offline app-shell caching (`@vite-pwa/sveltekit` + Workbox).
@@ -110,6 +118,8 @@ docker run -d \
 | ------------- | -------------------------------------------- | ----------------------- |
 | `CONFIG_PATH` | Path to the dashboard's `config.yaml`.        | `./config/config.yaml`  |
 | `PORT`        | HTTP port for the Node server.                | `3000`                  |
+| `JWT_SECRET`  | JWT signing secret (sessions). When unset, a persistent random secret is generated and stored next to `config.yaml`. | auto-generated |
+| `COOKIE_SECURE` | Set `true` to send the session cookie with `Secure` only (e.g. behind TLS). Leave unset on plain-HTTP LANs. | unset |
 
 ---
 
@@ -143,6 +153,12 @@ categories:
 
 The **default background** lives at `config/default-bg.jpg` — the same directory as `config.yaml` — and is served from there at request time, so replacing the file (or mounting a new one) updates the dashboard without a rebuild. When `backgroundMode` is `solid`, the image is ignored and the solid color + gradient overlay is used.
 
+> **`auth` — the admin password block.** `config.yaml` also stores an
+> `auth.adminPasswordHash` value (a bcrypt hash, never a literal password). It is
+> kept **out of the dashboard schema above** so the hash is never sent to the
+> client. An empty string means no password is set (first-run setup). See
+> [Security & Authentication](#security--authentication).
+
 ### Icon resolution
 
 | Format                   | Example                              | Renders as                          |
@@ -165,6 +181,12 @@ The **default background** lives at `config/default-bg.jpg` — the same directo
 | `GET`    | `/api/background/image`            | Serves the current custom (uploaded) background image. |
 | `DELETE` | `/api/background`                  | Removes the uploaded background image.                |
 | `GET`    | `/api/icons/simple-icons/<slug>`   | Serves a brand SVG by Simple Icons slug.               |
+| `POST`   | `/api/auth/login`                  | Logs in (or performs first-run setup); body `{ password, confirm? }`. Sets the 72 h session cookie. |
+| `POST`   | `/api/auth/logout`                 | Clears the session cookie.                            |
+| `POST`   | `/api/auth/reset-password`         | Changes the password (requires session + current password). |
+
+> All non-`/api/auth/*` and non-`/login` routes require a valid session; unauth
+> API requests get `401`, pages redirect to `/login`.
 
 ---
 
@@ -176,21 +198,24 @@ src/
 │   ├── assets/            # favicon.svg
 │   ├── components/        # Toolbar, CategorySection, AppCard, AppIcon,
 │   │                      # EditAppModal, SettingsDrawer, Spotlight, ConfirmDialog
-│   ├── server/            # yaml.ts (config read/write), background.ts (image helpers)
+│   ├── server/            # yaml.ts (config read/write), auth.ts (bcrypt/JWT), background.ts (image helpers)
 │   ├── state/             # dashboard.svelte.ts (reactive global state)
 │   ├── utils/             # icons.ts (icon resolution)
-│   ├── types.ts           # Zod schemas + exported TS types
+│   ├── types.ts           # Zod schemas + exported TS types (AuthConfigSchema is server-only)
 │   └── index.ts           # barrel export for the $lib alias
 └── routes/
     ├── +layout.svelte     # root layout (loads Tailwind + favicon)
+    ├── hooks.server.ts    # global auth gate (redirects to /login, 401 for APIs)
     ├── +page.server.ts    # server load: reads config
     ├── +page.svelte       # dashboard shell (background styling)
+    ├── login/             # login / first-run setup page
     ├── layout.css         # Tailwind v4 import + CSS custom properties
     └── api/
         ├── config/        # GET/POST config
         ├── background/    # POST upload, DELETE
         │   ├── default/   # GET serve config/default-bg.jpg
         │   └── image/     # GET serve uploaded image
+        ├── auth/          # login, logout, reset-password
         └── icons/simple-icons/[slug]/   # server-side brand SVGs
 ```
 

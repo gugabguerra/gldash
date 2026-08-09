@@ -1,5 +1,6 @@
 import type { App, Config } from '$lib/types';
 import { ConfigSchema, DEFAULT_THEME } from '$lib/types';
+import { createId } from '$lib/utils/uuid';
 
 /** Identifies a single app's position within the categories tree. */
 export interface AppRef {
@@ -141,7 +142,7 @@ class DashboardState {
 		const category = this.config.categories[categoryIndex];
 		if (!category) return;
 		const newApp: App = {
-			id: crypto.randomUUID(),
+id: createId(),
 			title: 'New App',
 			url: 'https://',
 			icon: '',
@@ -153,7 +154,7 @@ class DashboardState {
 
 	/** Adds a new empty category. */
 	async addCategory(name: string) {
-		this.config.categories.push({ id: crypto.randomUUID(), name, apps: [] });
+		this.config.categories.push({ id: createId(), name, apps: [] });
 		await this.save();
 	}
 

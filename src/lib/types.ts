@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createId } from '$lib/utils/uuid';
 
 /** Layout modes supported by the dashboard. */
 export const layoutOptions = ['grid', 'fluid', 'table'] as const;
@@ -14,7 +15,7 @@ export const AppSchema = z.object({
 });
 
 export const CategorySchema = z.object({
-	id: z.string().min(1).optional().default(() => crypto.randomUUID()),
+	id: z.string().min(1).optional().default(() => createId()),
 	name: z.string().min(1),
 	apps: z.array(AppSchema).default([])
 });

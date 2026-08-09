@@ -8,6 +8,30 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.4.0] - 2026-08-09
+
+Single-admin authentication.
+
+### Added
+- **Password-protected dashboard** — a `/login` page gates the app; first-run
+  visits double as a setup screen to create the admin password (min 8 chars).
+- **bcrypt password hashing** (cost 12), stored in the `auth` block of
+  `config.yaml` (`AuthConfigSchema`), kept out of the client-facing config
+  schema so the hash never reaches the browser.
+- **JWT sessions** — a 72-hour `httpOnly` session cookie
+  (`gldash_session`, `SameSite=Lax`) signed with a server secret; a persistent
+  random secret is generated next to `config.yaml` unless `JWT_SECRET` is set.
+- **Global auth gate** (`src/hooks.server.ts`) — API requests without a session
+  get `401`; page requests redirect to `/login`.
+- **Logout** (`POST /api/auth/logout`) and **change password** from Settings
+  (`POST /api/auth/reset-password`, session + current password required, session
+  rotated on success).
+- **Recovery** — empty `auth.adminPasswordHash` in `config.yaml` and restart to
+  reset the password; the next visit prompts for a new one.
+- `COOKIE_SECURE=true` env flag for TLS deployments.
+
+---
+
 ## [v0.3.0] - 2026-08-07
 
 Default background image and one-click reset of the theme.
