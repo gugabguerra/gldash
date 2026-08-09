@@ -3,10 +3,12 @@
 	import { dashboard } from '$lib/state/dashboard.svelte';
 	import { BACKGROUND_DEFAULT_URL, backgroundModes, type BackgroundMode } from '$lib/types';
 	import PasswordResetDialog from '$lib/components/PasswordResetDialog.svelte';
+	import AppNameDialog from '$lib/components/AppNameDialog.svelte';
 
 	let newCategoryName = $state('');
 	let bgFileInput = $state<HTMLInputElement | null>(null);
 	let passwordResetOpen = $state(false);
+	let appNameOpen = $state(false);
 
 	const bgMode = $derived(dashboard.config.settings.theme.backgroundMode);
 	const bgPreview = $derived(
@@ -120,21 +122,25 @@
 				</button>
 			</div>
 
-			<div class="flex flex-col gap-6">
+			<div class="flex flex-col divide-y divide-slate-700/50">
 				<div>
-					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Grid Columns</h3>
-					<input
-						type="range"
-						min="2"
-						max="6"
-						value={dashboard.config.settings.columns}
-						oninput={onColumnsChange}
-						class="w-full"
-					/>
-					<p class="mt-1 text-xs opacity-75">{dashboard.config.settings.columns} columns</p>
+					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Add Category</h3>
+					<form class="flex gap-2" onsubmit={(e) => { e.preventDefault(); onAddCategory(); }}>
+						<input
+							bind:value={newCategoryName}
+							placeholder="Category name"
+							class="flex-1 rounded-md border border-slate-700/50 bg-transparent px-3 py-1.5 text-sm text-slate-100 outline-none focus:border-slate-500/50"
+						/>
+						<button
+							type="submit"
+							class="rounded-md border border-slate-700/50 px-3 py-1.5 text-sm text-slate-300 transition-all duration-150 hover:border-slate-500/50"
+						>
+							Add
+						</button>
+					</form>
 				</div>
 
-				<div>
+				<div class="py-5">
 					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Theme</h3>
 					<div class="flex flex-col gap-3">
 						<label class="flex items-center justify-between text-xs text-slate-400">
@@ -235,24 +241,20 @@
 					</div>
 				</div>
 
-				<div>
-					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Add Category</h3>
-					<form class="flex gap-2" onsubmit={(e) => { e.preventDefault(); onAddCategory(); }}>
-						<input
-							bind:value={newCategoryName}
-							placeholder="Category name"
-							class="flex-1 rounded-md border border-slate-700/50 bg-transparent px-3 py-1.5 text-sm text-slate-100 outline-none focus:border-slate-500/50"
-						/>
-						<button
-							type="submit"
-							class="rounded-md border border-slate-700/50 px-3 py-1.5 text-sm text-slate-300 transition-all duration-150 hover:border-slate-500/50"
-						>
-							Add
-						</button>
-					</form>
+				<div class="py-5">
+					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Grid Columns</h3>
+					<input
+						type="range"
+						min="2"
+						max="6"
+						value={dashboard.config.settings.columns}
+						oninput={onColumnsChange}
+						class="w-full"
+					/>
+					<p class="mt-1 text-xs opacity-75">{dashboard.config.settings.columns} columns</p>
 				</div>
 
-				<div class="mt-auto border-t border-slate-700/50 pt-4">
+				<div class="mt-auto py-5">
 					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Account</h3>
 					<button
 						onclick={() => (passwordResetOpen = true)}
@@ -261,9 +263,23 @@
 						<KeyRound size={13} /> Change Password
 					</button>
 				</div>
+
+				<div class="py-5">
+					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">App Name</h3>
+					<div class="flex items-center justify-between gap-2">
+						<span class="truncate text-sm text-slate-200">{dashboard.config.settings.appName}</span>
+						<button
+							onclick={() => (appNameOpen = true)}
+							class="rounded-md border border-slate-700/50 px-3 py-1.5 text-sm text-slate-300 transition-all duration-150 hover:border-slate-500/50 hover:text-slate-200"
+						>
+							Change
+						</button>
+					</div>
+				</div>
 			</div>
 
 			<PasswordResetDialog open={passwordResetOpen} onclose={() => (passwordResetOpen = false)} />
+			<AppNameDialog open={appNameOpen} onclose={() => (appNameOpen = false)} />
 		</div>
 	</div>
 {/if}

@@ -5,6 +5,7 @@ auth:
 settings:
   layout: grid
   columns: 4
+  appName: GLdash
   theme:
     background: '#0f172a'
     textColor: '#f8fafc'

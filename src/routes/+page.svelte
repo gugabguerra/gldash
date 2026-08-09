@@ -53,7 +53,7 @@
 </script>
 
 <svelte:head>
-	<title>GLdash</title>
+	<title>{dashboard.config.settings.appName}</title>
 </svelte:head>
 
 {#if data.configError}

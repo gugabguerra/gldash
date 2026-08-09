@@ -62,6 +62,7 @@ const defaultThemeValue: Theme = {
 export const SettingsSchema = z.object({
 	layout: z.enum(layoutOptions).default('grid'),
 	columns: z.number().int().min(2).max(6).default(4),
+	appName: z.string().min(1).default('GLdash'),
 	theme: ThemeSchema.default(defaultThemeValue)
 });
 
@@ -81,6 +82,7 @@ export const ConfigSchema = z.object({
 	settings: SettingsSchema.default({
 		layout: 'grid',
 		columns: 4,
+		appName: 'GLdash',
 		theme: defaultThemeValue
 	}),
 	categories: z.array(CategorySchema).default([])

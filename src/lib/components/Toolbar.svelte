@@ -28,7 +28,7 @@
 <header
 	class="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-slate-700/50 bg-[var(--gl-background)]/50 toolbar px-6 py-3 backdrop-blur-sm"
 >
-	<h1 class="text-base font-bold tracking-tight">GLdash</h1>
+	<h1 class="text-base font-bold tracking-tight">{dashboard.config.settings.appName}</h1>
 
 	<div class="flex items-center gap-2">
 		<div class="flex items-center gap-1 rounded-md border border-slate-700/50 p-1">
