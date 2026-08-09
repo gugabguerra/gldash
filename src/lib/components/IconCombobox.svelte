@@ -24,6 +24,7 @@
 	let open = $state(false);
 	let activeIndex = $state(0);
 	let loading = $state(true);
+	let loadError = $state(false);
 
 	$effect(() => {
 		let cancelled = false;
@@ -44,7 +45,9 @@
 					)
 				];
 			})
-			.catch(() => {})
+			.catch(() => {
+				if (!cancelled) loadError = true;
+			})
 			.finally(() => {
 				if (!cancelled) loading = false;
 			});
@@ -156,6 +159,8 @@
 			</ul>
 		{:else if open && loading}
 			<p class="absolute top-full mt-1 text-xs text-slate-500">Loading icons…</p>
+		{:else if open && loadError}
+			<p class="absolute top-full mt-1 text-xs text-amber-400/80">Couldn't load icons — check the server.</p>
 		{/if}
 	</div>
 </label>

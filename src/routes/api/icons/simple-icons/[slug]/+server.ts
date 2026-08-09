@@ -2,6 +2,7 @@ import { error, text } from '@sveltejs/kit';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { RequestHandler } from './$types';
+import { getSimpleIconsDir } from '$lib/server/icons';
 
 const FALLBACK_SVG =
 	'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5Zm0 2h14v14H5V5Zm3 3h8v2H8V8Zm0 4h5v2H8v-2Z"/></svg>';
@@ -19,7 +20,17 @@ export const GET: RequestHandler = async ({ params }) => {
 		error(400, 'Invalid icon slug.');
 	}
 
-	const filePath = path.join(process.cwd(), 'node_modules', 'simple-icons', 'icons', `${slug}.svg`);
+	const iconsDir = getSimpleIconsDir();
+	if (!iconsDir) {
+		return text(FALLBACK_SVG, {
+			headers: {
+				'Content-Type': 'image/svg+xml',
+				'Cache-Control': 'public, max-age=3600'
+			}
+		});
+	}
+
+	const filePath = path.join(iconsDir, 'icons', `${slug}.svg`);
 
 	try {
 		const svg = await readFile(filePath, 'utf-8');
