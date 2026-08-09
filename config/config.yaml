@@ -1,3 +1,5 @@
+auth:
+  adminPasswordHash: REDACTED
 settings:
   layout: grid
   columns: 4
@@ -5,7 +7,8 @@ settings:
     background: '#0f172a'
     textColor: '#f8fafc'
     cardBackground: '#1e293b'
-    backgroundMode: default
+    backgroundImage: /api/background/image
+    backgroundMode: custom
 categories:
   - id: infra
     name: Infrastructure

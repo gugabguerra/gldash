@@ -1,3 +1,7 @@
+# Leave adminPasswordHash empty on first run. The app prompts to set it.
+# To reset the password, clear this value and restart.
+auth:
+  adminPasswordHash: ''
 settings:
   layout: grid
   columns: 4

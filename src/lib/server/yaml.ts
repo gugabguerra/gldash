@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { load as loadYaml, dump as dumpYaml } from 'js-yaml';
-import { ConfigSchema, type Config } from '$lib/types';
+import { AuthConfigSchema, ConfigSchema, type AuthConfig, type Config } from '$lib/types';
 
 /**
  * Resolves the on-disk location of `config.yaml`.
@@ -80,19 +80,68 @@ export function readConfig(): Config {
 }
 
 /**
- * Validates and writes the configuration back to `config.yaml`,
- * creating the parent directory if it does not exist yet.
+ * Reads and validates the `auth` section of `config.yaml`.
+ * Returns empty defaults when the file or section is missing.
  */
-export function writeConfig(config: Config): Config {
+export function readAuth(): AuthConfig {
 	const path = getConfigPath();
-	const validated = ConfigSchema.parse(config);
+
+	if (!existsSync(path)) {
+		return { adminPasswordHash: '' };
+	}
+
+	const raw = readFileSync(path, 'utf-8');
+	const parsed = loadYaml(raw) ?? {};
+
+	const result = AuthConfigSchema.safeParse((parsed as { auth?: unknown }).auth ?? {});
+	if (!result.success) {
+		throw new Error(`Auth config validation failed for "${path}": ${result.error.message}`);
+	}
+
+	return result.data;
+}
+
+/**
+ * Merges a validated `auth` block into `config.yaml` on disk, preserving
+ * the rest of the document (settings + categories).
+ */
+export function writeAuth(auth: AuthConfig): AuthConfig {
+	const path = getConfigPath();
+	const validated = AuthConfigSchema.parse(auth);
+
+	const existing = existsSync(path) ? loadYaml(readFileSync(path, 'utf-8')) ?? {} : {};
+	const doc = { ...(existing as object), auth: validated };
 
 	const dir = dirname(path);
 	if (!existsSync(dir)) {
 		mkdirSync(dir, { recursive: true });
 	}
 
-	const content = dumpYaml(validated, {
+	try {
+		writeFileSync(path, dumpYaml(doc, { indent: 2, lineWidth: 120, noRefs: true }), 'utf-8');
+	} catch (err) {
+		throw new Error(`Unable to write config file at "${path}": ${(err as Error).message}`);
+	}
+
+	return validated;
+}
+
+/**
+ * Validates and writes the configuration back to `config.yaml`,
+ * creating the parent directory if it does not exist yet.
+ * The existing `auth` section is carried over so password data survives saves.
+ */
+export function writeConfig(config: Config, auth?: AuthConfig): Config {
+	const path = getConfigPath();
+	const validated = ConfigSchema.parse(config);
+	const existingAuth = readAuth();
+
+	const dir = dirname(path);
+	if (!existsSync(dir)) {
+		mkdirSync(dir, { recursive: true });
+	}
+
+	const content = dumpYaml({ auth: auth ?? existingAuth, ...validated }, {
 		indent: 2,
 		lineWidth: 120,
 		noRefs: true

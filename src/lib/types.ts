@@ -64,6 +64,18 @@ export const SettingsSchema = z.object({
 	theme: ThemeSchema.default(defaultThemeValue)
 });
 
+/**
+ * Server-only authentication settings stored in `config.yaml`.
+ * Kept out of `ConfigSchema` so secrets never reach the client.
+ * `adminPasswordHash` is a bcrypt hash; an empty string means no password
+ * is set yet (first-run setup or manual reset by emptying the variable).
+ */
+export const AuthConfigSchema = z.object({
+	adminPasswordHash: z.string().default('')
+});
+
+export type AuthConfig = z.infer<typeof AuthConfigSchema>;
+
 export const ConfigSchema = z.object({
 	settings: SettingsSchema.default({
 		layout: 'grid',

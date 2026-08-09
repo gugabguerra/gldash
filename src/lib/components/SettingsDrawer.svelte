@@ -1,10 +1,12 @@
 <script lang="ts">
-	import { X, Upload, Trash2, RotateCcw } from '@lucide/svelte';
+	import { X, Upload, Trash2, RotateCcw, KeyRound } from '@lucide/svelte';
 	import { dashboard } from '$lib/state/dashboard.svelte';
 	import { BACKGROUND_DEFAULT_URL, backgroundModes, type BackgroundMode } from '$lib/types';
+	import PasswordResetDialog from '$lib/components/PasswordResetDialog.svelte';
 
 	let newCategoryName = $state('');
 	let bgFileInput = $state<HTMLInputElement | null>(null);
+	let passwordResetOpen = $state(false);
 
 	const bgMode = $derived(dashboard.config.settings.theme.backgroundMode);
 	const bgPreview = $derived(
@@ -234,31 +236,6 @@
 				</div>
 
 				<div>
-					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Manage Categories</h3>
-					{#if dashboard.config.categories.length === 0}
-						<p class="text-xs opacity-75">No categories yet.</p>
-					{:else}
-						<div class="flex flex-col gap-2">
-							{#each dashboard.config.categories as category, index (category.id ?? category.name + index)}
-								<div class="flex items-center justify-between rounded-md border border-slate-700/50 px-2 py-1.5 text-sm">
-									<div class="flex flex-col">
-										<span class="text-slate-200">{category.name}</span>
-										<span class="text-xs text-slate-500">{category.apps.length} apps</span>
-									</div>
-									<button
-										onclick={() => dashboard.removeCategory(index)}
-										class="flex items-center justify-center rounded p-1 text-slate-400 hover:bg-red-900/30 hover:text-red-300"
-										aria-label={`Delete category ${category.name}`}
-									>
-										<Trash2 size={12} />
-									</button>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				</div>
-
-				<div>
 					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Add Category</h3>
 					<form class="flex gap-2" onsubmit={(e) => { e.preventDefault(); onAddCategory(); }}>
 						<input
@@ -274,7 +251,19 @@
 						</button>
 					</form>
 				</div>
+
+				<div class="mt-auto border-t border-slate-700/50 pt-4">
+					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Account</h3>
+					<button
+						onclick={() => (passwordResetOpen = true)}
+						class="flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-700/50 px-3 py-2 text-sm text-slate-300 transition-all duration-150 hover:border-slate-500/50 hover:text-slate-200"
+					>
+						<KeyRound size={13} /> Change Password
+					</button>
+				</div>
 			</div>
+
+			<PasswordResetDialog open={passwordResetOpen} onclose={() => (passwordResetOpen = false)} />
 		</div>
 	</div>
 {/if}

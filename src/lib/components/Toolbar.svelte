@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Search, Settings, Pencil, Check, LayoutGrid, Rows3, Table } from '@lucide/svelte';
+	import { Search, Settings, Pencil, Check, LayoutGrid, Rows3, Table, LogOut } from '@lucide/svelte';
+	import { goto } from '$app/navigation';
 	import { dashboard } from '$lib/state/dashboard.svelte';
 	import type { LayoutMode } from '$lib/types';
 
@@ -16,6 +17,11 @@
 
 	function onToggleEdit() {
 		dashboard.toggleEditMode();
+	}
+
+	async function onSignOut() {
+		await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+		goto('/login');
 	}
 </script>
 
@@ -64,6 +70,15 @@
 			{:else}
 				<Pencil size={16} /> Edit
 			{/if}
+		</button>
+
+		<button
+			onclick={onSignOut}
+			class="rounded-md border border-slate-700/50 p-2 text-slate-400 transition-all duration-150 hover:border-red-500/40 hover:text-red-300"
+			aria-label="Sign out"
+			title="Sign out"
+		>
+			<LogOut size={16} />
 		</button>
 	</div>
 </header>
