@@ -17,8 +17,10 @@ endpoints. It uses `@sveltejs/adapter-node` at runtime.
                  │  +page.svelte  (dashboard shell)            │
                  │  dashboard.svelte.ts (reactive root state)  │
                  │  Toolbar / CategorySection / AppCard ...    │
+                 │  /login  (auth page, first-run or sign-in)  │
                  └───────────────┬────────────────────────────┘
                                  │ fetch()  (GET/POST/DELETE)
+                                 │   hooks.server.ts (auth gate)
                  ┌───────────────▼────────────────────────────┐
                  │               API layer                    │
                  │  /api/config        read/write config.yaml │
@@ -26,10 +28,11 @@ endpoints. It uses `@sveltejs/adapter-node` at runtime.
                  │  /api/background/image    serve uploaded   │
                  │  /api/background/default   serve default   │
                  │  /api/icons/simple-icons/[slug]  brand SVG │
+                 │  /api/auth/login|logout|reset-password     │
                  └───────────────┬────────────────────────────┘
                                  │ filesystem / packages
                  ┌───────────────▼────────────────────────────┐
-                 │  $lib/server (yaml.ts, background.ts)      │
+                 │  $lib/server (yaml.ts, auth.ts, background.ts) │
                  │  config/config.yaml, config/default-bg.jpg │
                  │  static/backgrounds/bg-*.jpg (uploads)     │
                  └────────────────────────────────────────────┘
@@ -39,12 +42,14 @@ endpoints. It uses `@sveltejs/adapter-node` at runtime.
 
 | Path | Responsibility |
 | --- | --- |
+| `src/hooks.server.ts` | Global auth gate: verifies the session cookie and blocks unauth requests. |
 | `src/routes/+page.server.ts` | Runs `readConfig()` on the server and passes it to the page. |
 | `src/routes/+page.svelte` | Shell: applies theme CSS variables + background, renders sections and overlays. |
 | `src/lib/state/dashboard.svelte.ts` | Module-level reactive store; the single source of truth for the live config and UI mode. |
-| `src/lib/server/yaml.ts` | Reads/validates and writes `config.yaml` (Zod). Owns `getConfigPath()`. |
+| `src/lib/server/yaml.ts` | Reads/validates and writes `config.yaml` (Zod). Owns `getConfigPath()`, `readAuth()`, `writeAuth()`. |
+| `src/lib/server/auth.ts` | Bcrypt hashing, JWT signing/verification, session cookie options, secret management. |
 | `src/lib/server/background.ts` | File-system helpers for stored/default backgrounds. |
-| `src/lib/types.ts` | Zod schemas, default constants, and exported TypeScript types. |
+| `src/lib/types.ts` | Zod schemas, default constants, and exported TypeScript types (`AuthConfigSchema` is server-only). |
 | `src/lib/utils/icons.ts` | Resolves an app's `icon` field into a renderable Lucide / SVG / image. |
 | `src/lib/components/*` | Presentational components (Toolbar, cards, modals, overlays). |
 
@@ -117,7 +122,37 @@ silent crash.
 
 ---
 
-## 4. Backgrounds: three modes
+## 4. Authentication & session handling
+
+The dashboard is a single-admin app. All auth code lives in
+`src/lib/server/auth.ts`, and the global gate is `src/hooks.server.ts`.
+
+**Flow:**
+
+1. First visit with no password set → `/login` shows the **setup** form; the
+   supplied password becomes the admin password (min 8 chars).
+2. `POST /api/auth/login` verifies the password with bcrypt
+   (`bcrypt.compare`) and issues a **JWT** signed with a server-side secret,
+   delivered as an httpOnly cookie `gldash_session`.
+3. Every request runs through `hooks.server.ts`, which verifies the token and sets
+   `event.locals.user`. Unauthenticated API calls get `401`; page requests are
+   redirected to `/login`.
+4. `POST /api/auth/logout` clears the cookie; `POST /api/auth/reset-password`
+   requires the session *and* the current password, then rotates the session.
+
+**Secrets & storage:**
+
+- The bcrypt password hash lives in the `auth` block of `config.yaml`
+  (`AuthConfigSchema` in `src/lib/types.ts`). It is deliberately **not** part of
+  `ConfigSchema`, so it is never serialized to the client.
+- The JWT secret is resolved by `getSecret()`: prefer `JWT_SECRET` env var;
+  otherwise read or generate `.session-secret` (mode `0600`) next to the config
+  file. Sessions therefore survive restarts without extra config.
+- The session cookie is `httpOnly`, `SameSite=Lax`, 72-hour lifespan, and honors
+  `COOKIE_SECURE=true` for TLS deployments (plain-HTTP LANs leave it unset so the
+  cookie is actually stored).
+
+## 5. Backgrounds: three modes
 
 The background is a single logical layer combined with a fixed radial-gradient
 overlay for readability:
@@ -149,7 +184,7 @@ Shared server helpers live in `src/lib/server/background.ts`
 
 ---
 
-## 5. Icon resolution
+## 6. Icon resolution
 
 `src/lib/utils/icons.ts` `resolveIcon(icon, appUrl)` runs in priority order
 (see `ResolvedIcon` discriminated union):
@@ -168,7 +203,7 @@ placeholder while loading.
 
 ---
 
-## 6. Layouts & drag-and-drop
+## 7. Layouts & drag-and-drop
 
 `CategorySection.svelte` renders the same app list in one of three layouts
 selected by `settings.layout`:
@@ -190,7 +225,7 @@ Reordering is handled entirely by `svelte-dnd-action`:
 
 ---
 
-## 7. Overlays
+## 8. Overlays
 
 All overlays are conditional renders within `+page.svelte`, driven by
 `dashboard` flags:
@@ -209,7 +244,7 @@ The confirmation dialog is a generic, singleton overlay configured via
 
 ---
 
-## 8. API reference
+## 9. API reference
 
 | Method | Route | Purpose |
 | --- | --- | --- |
@@ -220,10 +255,13 @@ The confirmation dialog is a generic, singleton overlay configured via
 | `GET` | `/api/background/default` | Serve the shipped `config/default-bg.jpg`. |
 | `DELETE` | `/api/background` | Remove the uploaded background image. |
 | `GET` | `/api/icons/simple-icons/[slug]` | Serve a brand SVG from `simple-icons`. |
+| `POST` | `/api/auth/login` | Verify password (or set it on first run) → 72 h session cookie. |
+| `POST` | `/api/auth/logout` | Clear the session cookie. |
+| `POST` | `/api/auth/reset-password` | Change password (session + current password required, rotates session). |
 
 ---
 
-## 9. Docker & environment
+## 10. Docker & environment
 
 - `Dockerfile` — multi-stage, `node:22-alpine`; builds then runs `node build/index.js`.
 - `docker-compose.yml` — maps `:3000`, mounts `./config` and
@@ -233,13 +271,16 @@ The confirmation dialog is a generic, singleton overlay configured via
 | --- | --- | --- |
 | `CONFIG_PATH` | Path to `config.yaml`. | `./config/config.yaml` |
 | `PORT` | HTTP port for the Node server. | `3000` |
+| `JWT_SECRET` | JWT signing secret. When unset, a persistent `.session-secret` is generated next to the config file. | auto-generated |
+| `COOKIE_SECURE` | `true` marks the session cookie `Secure` (TLS). Leave unset on plain HTTP. | unset |
 
 The mounted `./config` volume makes both `config.yaml` and `default-bg.jpg`
-editable at runtime without rebuilding the image.
+editable at runtime without rebuilding the image. Auth state (password hash +
+generated `.session-secret`) also persists there.
 
 ---
 
-## 10. Extension points / roadmap hooks
+## 11. Extension points / roadmap hooks
 
 Phase 2 (Traefik/Docker discovery) and Phase 3 (update badges) were scoped
 ahead of time; the YAML schema already carries reserved `githubRepo` and
