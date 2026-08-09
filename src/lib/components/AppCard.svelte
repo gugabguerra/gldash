@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Pencil, GripVertical, Trash2 } from '@lucide/svelte';
+	import { Pencil, GripVertical, Trash2, Copy } from '@lucide/svelte';
 	import AppIcon from './AppIcon.svelte';
 	import type { App } from '$lib/types';
 	import { dashboard, type AppRef } from '$lib/state/dashboard.svelte';
@@ -16,6 +16,12 @@
 		e.preventDefault();
 		e.stopPropagation();
 		dashboard.startEditingApp(ref);
+	}
+
+	function onClone(e: MouseEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		dashboard.cloneApp(ref);
 	}
 
 	function onRemove(e: MouseEvent) {
@@ -47,6 +53,13 @@
 					<Pencil size={14} />
 				</button>
 				<button
+					onclick={onClone}
+					class="rounded p-1 text-slate-400 hover:bg-slate-700/60 hover:text-slate-100"
+					aria-label={`Clone ${app.title}`}
+				>
+					<Copy size={14} />
+				</button>
+				<button
 					onclick={onRemove}
 					class="rounded p-1 text-slate-400 hover:bg-red-900/40 hover:text-red-300"
 					aria-label={`Remove ${app.title}`}
@@ -71,6 +84,13 @@
 					aria-label={`Edit ${app.title}`}
 				>
 					<Pencil size={14} />
+				</button>
+				<button
+					onclick={onClone}
+					class="rounded p-1 text-slate-400 hover:bg-slate-700/60 hover:text-slate-100"
+					aria-label={`Clone ${app.title}`}
+				>
+					<Copy size={14} />
 				</button>
 				<button
 					onclick={onRemove}

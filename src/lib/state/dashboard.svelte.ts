@@ -142,7 +142,7 @@ class DashboardState {
 		const category = this.config.categories[categoryIndex];
 		if (!category) return;
 		const newApp: App = {
-id: createId(),
+	id: createId(),
 			title: 'New App',
 			url: 'https://',
 			icon: '',
@@ -150,6 +150,25 @@ id: createId(),
 		};
 		category.apps.push(newApp);
 		this.startEditingApp({ categoryIndex, appIndex: category.apps.length - 1 });
+	}
+
+	/** Clones an existing app, inserting the copy directly after it and opening it for editing. */
+	async cloneApp(ref: AppRef): Promise<void> {
+		const category = this.config.categories[ref.categoryIndex];
+		if (!category) return;
+		const source = category.apps[ref.appIndex];
+		if (!source) return;
+
+		const clone: App = {
+			...source,
+			id: createId(),
+			title: `${source.title} Copy`
+		};
+
+		const insertAt = ref.appIndex + 1;
+		category.apps.splice(insertAt, 0, clone);
+		this.startEditingApp({ categoryIndex: ref.categoryIndex, appIndex: insertAt });
+		await this.save();
 	}
 
 	/** Adds a new empty category. */
