@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Eye, EyeOff, Lock, ShieldCheck } from '@lucide/svelte';
+	import { Eye, EyeOff, Lock } from '@lucide/svelte';
 
 	let { data } = $props();
 
@@ -63,7 +63,7 @@
 			<div
 				class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl border border-slate-700/50 bg-slate-900"
 			>
-				<ShieldCheck size={26} class="text-emerald-300/90" />
+				<img src="/android-chrome-192x192.png" alt="GLdash logo" class="h-9 w-9 rounded-lg" />
 			</div>
 			<h1 class="text-xl font-bold tracking-tight">GLdash</h1>
 			<p class="mt-1 text-sm text-slate-400">{needsSetup ? 'Create your admin password' : 'Sign in to your dashboard'}</p>

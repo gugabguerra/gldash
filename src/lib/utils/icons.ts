@@ -75,7 +75,9 @@ async function resolveIconUncached(value: string): Promise<ResolvedIcon> {
 		return { kind: 'image', src: value };
 	}
 
-	return { kind: 'image', src: '/icons/icon-192.png' };
+	const fallback = await loadLucideIcon('server');
+	if (fallback) return { kind: 'lucide', component: fallback };
+	return { kind: 'image', src: '/android-chrome-192x192.png' };
 }
 
 /**
