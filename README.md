@@ -33,7 +33,7 @@ Built with **SvelteKit 5 (runes)**, **TypeScript (strict)**, **Tailwind CSS v4**
 - **Categories** organize apps into labeled sections.
 - **Edit Mode** — toggle editing, then:
   - **Drag-and-drop reordering** of cards within and across categories (`svelte-dnd-action`).
-  - **Per-app edit modal** — title, URL, icon, note, linked GitHub repo and Docker image.
+  - **Per-app edit modal** — title, URL, icon, and note.
   - Add / remove **apps and categories**.
 
 ### Theming & Background Image
@@ -164,8 +164,6 @@ categories:
         url: "http://192.168.1.10/admin"
         icon: "simple-icons:pihole"    # lucide:* | simple-icons:* | URL | fallback
         note: "DNS Primário da Rede"
-        githubRepo: "pi-hole/pi-hole"  # reserved for Phase 3 (update badges)
-        dockerImage: "pihole/pihole"   # reserved for Phase 3
 ```
 
 The **default background** lives at `config/default-bg.jpg` — the same directory as `config.yaml` — and is served from there at request time, so replacing the file (or mounting a new one) updates the dashboard without a rebuild. When `backgroundMode` is `solid`, the image is ignored and the solid color + gradient overlay is used.
@@ -241,7 +239,7 @@ src/
 ## 🗺️ Roadmap
 
 - **Phase 2 — Traefik / Docker auto-discovery** — optional read access to `/var/run/docker.sock` or the Traefik REST API, with a "Discovered Services" drawer inside Edit Mode to one-click populate the config.
-- **Phase 3 — Update tracker** — background checks for GitHub Releases and Docker Hub tags; discrete **"Update Available"** badges on cards using the `githubRepo` / `dockerImage` fields.
+- **Phase 3 — Update tracker** — background checks for GitHub Releases and Docker Hub tags; discrete **"Update Available"** badges on cards.
 
 ---
 

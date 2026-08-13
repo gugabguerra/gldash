@@ -9,9 +9,7 @@ export const AppSchema = z.object({
 	title: z.string().min(1),
 	url: z.string().min(1),
 	icon: z.string().optional().default(''),
-	note: z.string().optional().default(''),
-	githubRepo: z.string().optional(),
-	dockerImage: z.string().optional()
+	note: z.string().optional().default('')
 });
 
 export const CategorySchema = z.object({

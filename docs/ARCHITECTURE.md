@@ -283,5 +283,6 @@ generated `.session-secret`) also persists there.
 ## 11. Extension points / roadmap hooks
 
 Phase 2 (Traefik/Docker discovery) and Phase 3 (update badges) were scoped
-ahead of time; the YAML schema already carries reserved `githubRepo` and
-`dockerImage` fields per app for the Phase 3 update tracker.
+ahead of time. If the Phase 3 update tracker is revisited, the `AppSchema`
+in `src/lib/types.ts` is the place to re-add per-app fields such as
+`githubRepo` / `dockerImage`.

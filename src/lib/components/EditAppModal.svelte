@@ -10,7 +10,7 @@
 		return dashboard.config.categories[ref.categoryIndex]?.apps[ref.appIndex] ?? null;
 	});
 
-	let form = $state({ title: '', url: '', icon: '', note: '', githubRepo: '', dockerImage: '' });
+	let form = $state({ title: '', url: '', icon: '', note: '' });
 
 	$effect(() => {
 		if (app) {
@@ -18,9 +18,7 @@
 				title: app.title,
 				url: app.url,
 				icon: app.icon ?? '',
-				note: app.note ?? '',
-				githubRepo: app.githubRepo ?? '',
-				dockerImage: app.dockerImage ?? ''
+				note: app.note ?? ''
 			};
 		}
 	});
@@ -35,9 +33,7 @@
 			title: form.title,
 			url: form.url,
 			icon: form.icon,
-			note: form.note,
-			githubRepo: form.githubRepo || undefined,
-			dockerImage: form.dockerImage || undefined
+			note: form.note
 		});
 		onClose();
 	}
@@ -96,22 +92,6 @@
 					Note
 					<input
 						bind:value={form.note}
-						class="rounded-md border border-slate-700/50 bg-transparent px-3 py-1.5 text-sm text-slate-100 outline-none focus:border-slate-500/50"
-					/>
-				</label>
-				<label class="flex flex-col gap-1 text-xs text-slate-400">
-					GitHub Repo <span class="opacity-60">(owner/repo)</span>
-					<input
-						bind:value={form.githubRepo}
-						placeholder="pi-hole/pi-hole"
-						class="rounded-md border border-slate-700/50 bg-transparent px-3 py-1.5 text-sm text-slate-100 outline-none focus:border-slate-500/50"
-					/>
-				</label>
-				<label class="flex flex-col gap-1 text-xs text-slate-400">
-					Docker Image
-					<input
-						bind:value={form.dockerImage}
-						placeholder="pihole/pihole"
 						class="rounded-md border border-slate-700/50 bg-transparent px-3 py-1.5 text-sm text-slate-100 outline-none focus:border-slate-500/50"
 					/>
 				</label>
