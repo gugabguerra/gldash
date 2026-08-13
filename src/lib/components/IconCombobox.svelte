@@ -63,7 +63,7 @@
 	const isUrlQuery = $derived(/^(https?:\/\/|\/)/i.test(value.trim()));
 
 	const suggestions = $derived.by<IconOption[]>(() => {
-		if (!query) return allOptions.slice(0, 6);
+		if (!query) return allOptions;
 		if (isUrlQuery) return [];
 		return allOptions
 			.map((option) => ({
@@ -72,7 +72,6 @@
 			}))
 			.filter((entry) => entry.rank >= 0)
 			.sort((a, b) => a.rank - b.rank || a.option.slug.localeCompare(b.option.slug))
-			.slice(0, 6)
 			.map((entry) => entry.option);
 	});
 
@@ -137,7 +136,7 @@
 			<ul
 				id="icon-dropdown"
 				role="listbox"
-				class="absolute inset-x-0 top-full z-10 mt-1 max-h-72 overflow-y-auto rounded-md border border-slate-700/50 bg-[var(--gl-card-background)] shadow-lg"
+				class="absolute inset-x-0 top-full z-10 mt-1 max-h-96 overflow-y-auto rounded-md border border-slate-700/50 bg-[var(--gl-card-background)] shadow-lg"
 				onmousedown={(e) => e.preventDefault()}
 			>
 				{#each suggestions as option, index (option.value)}
