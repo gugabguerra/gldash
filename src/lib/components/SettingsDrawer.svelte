@@ -108,22 +108,22 @@
 		onkeydown={(e) => e.key === 'Escape' && onClose()}
 	>
 		<div
-			class="h-full w-full max-w-sm border-l border-slate-700/50 bg-[var(--gl-card-background)] p-5"
+			class="flex h-full w-full max-w-sm flex-col border-l border-slate-700/50 bg-[var(--gl-card-background)] p-5"
 			role="dialog"
 			aria-modal="true"
 			tabindex="-1"
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => e.stopPropagation()}
 		>
-			<div class="mb-5 flex items-center justify-between">
+			<div class="mb-5 flex shrink-0 items-center justify-between">
 				<h2 class="text-sm font-semibold">Settings</h2>
 				<button onclick={onClose} class="rounded p-1 text-slate-400 hover:bg-slate-700/60" aria-label="Close">
 					<X size={16} />
 				</button>
 			</div>
 
-			<div class="flex flex-col divide-y divide-slate-700/50">
-				<div>
+			<div class="flex min-h-0 flex-1 flex-col divide-y divide-slate-700/50 overflow-y-auto">
+				<div class="border-b border-slate-700/50 pb-5">
 					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Add Category</h3>
 					<form class="flex gap-2" onsubmit={(e) => { e.preventDefault(); onAddCategory(); }}>
 						<input
