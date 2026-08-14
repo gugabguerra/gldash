@@ -2,7 +2,7 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { writeFile, mkdir, unlink, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { ALLOWED, MAX_SIZE, getBackgroundsDir } from '$lib/server/background';
+import { ALLOWED, MAX_SIZE, getBackgroundsDir, sniffImageMime } from '$lib/server/background';
 
 /**
  * POST /api/background
@@ -28,7 +28,10 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json({ message: `Image must be smaller than ${MAX_SIZE / 1024 / 1024} MB.` }, { status: 400 });
 	}
 
-	const ext = ALLOWED[file.type];
+	const buffer = Buffer.from(await file.arrayBuffer());
+
+	const mime = sniffImageMime(buffer);
+	const ext = mime ? ALLOWED[mime] : undefined;
 	if (!ext) {
 		return json({ message: 'Unsupported image type. Use JPEG, PNG, or WebP.' }, { status: 400 });
 	}
@@ -55,7 +58,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		/* directory was just created; ignore */
 	}
 
-	const buffer = Buffer.from(await file.arrayBuffer());
 	const filename = `bg-${Date.now()}${ext}`;
 	const filepath = path.join(dir, filename);
 

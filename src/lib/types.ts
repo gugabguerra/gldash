@@ -7,7 +7,12 @@ export const layoutOptions = ['grid', 'fluid', 'table'] as const;
 export const AppSchema = z.object({
 	id: z.string().min(1),
 	title: z.string().min(1),
-	url: z.string().min(1),
+	url: z
+		.string()
+		.min(1)
+		.refine((v) => /^(https?:\/\/|\/)/i.test(v), {
+			message: 'URL must start with http://, https://, or /'
+		}),
 	icon: z.string().optional().default(''),
 	note: z.string().optional().default('')
 });

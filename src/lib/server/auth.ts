@@ -13,6 +13,12 @@ export const SESSION_DURATION_SECONDS = 72 * 60 * 60;
 
 const SECRET_FILE = '.session-secret';
 
+/** JWT issuer claim used at sign and verify time. */
+const TOKEN_ISSUER = 'gldash';
+
+/** Minimum acceptable length for an externally supplied JWT secret. */
+const MIN_JWT_SECRET_LENGTH = 32;
+
 let cachedSecret: string | null = null;
 
 /**
@@ -41,6 +47,12 @@ function getSecret(): string {
 	if (cachedSecret) return cachedSecret;
 
 	if (process.env.JWT_SECRET) {
+		if (process.env.JWT_SECRET.length < MIN_JWT_SECRET_LENGTH) {
+			throw new Error(
+				`JWT_SECRET must be at least ${MIN_JWT_SECRET_LENGTH} characters long. ` +
+					'Generate one, e.g. `openssl rand -hex 32`.'
+			);
+		}
 		cachedSecret = process.env.JWT_SECRET;
 		return cachedSecret;
 	}
@@ -83,7 +95,8 @@ export function isAdminConfigured(): boolean {
 /** Signs a JWT session token valid for 72 hours. */
 export function createSessionToken(): string {
 	return jwt.sign({ role: 'admin' }, getSecret(), {
-		expiresIn: SESSION_DURATION_SECONDS
+		expiresIn: SESSION_DURATION_SECONDS,
+		issuer: TOKEN_ISSUER
 	});
 }
 
@@ -94,7 +107,7 @@ export function createSessionToken(): string {
 export function verifySessionToken(token: string | undefined): boolean {
 	if (!token) return false;
 	try {
-		const payload = jwt.verify(token, getSecret());
+		const payload = jwt.verify(token, getSecret(), { issuer: TOKEN_ISSUER });
 		return typeof payload !== 'string' && payload.role === 'admin';
 	} catch {
 		return false;

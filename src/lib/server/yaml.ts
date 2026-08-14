@@ -118,7 +118,10 @@ export function writeAuth(auth: AuthConfig): AuthConfig {
 	}
 
 	try {
-		writeFileSync(path, dumpYaml(doc, { indent: 2, lineWidth: 120, noRefs: true }), 'utf-8');
+		writeFileSync(path, dumpYaml(doc, { indent: 2, lineWidth: 120, noRefs: true }), {
+			encoding: 'utf-8',
+			mode: 0o600
+		});
 	} catch (err) {
 		throw new Error(`Unable to write config file at "${path}": ${(err as Error).message}`);
 	}
@@ -148,7 +151,7 @@ export function writeConfig(config: Config, auth?: AuthConfig): Config {
 	});
 
 	try {
-		writeFileSync(path, content, 'utf-8');
+		writeFileSync(path, content, { encoding: 'utf-8', mode: 0o600 });
 	} catch (err) {
 		throw new Error(`Unable to write config file at "${path}": ${(err as Error).message}`);
 	}

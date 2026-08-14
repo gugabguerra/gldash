@@ -9,6 +9,7 @@ import {
 	verifySessionToken
 } from '$lib/server/auth';
 import { readAuth } from '$lib/server/yaml';
+import { rateLimit } from '$lib/server/rateLimit';
 
 /**
  * POST /api/auth/reset-password
@@ -17,10 +18,14 @@ import { readAuth } from '$lib/server/yaml';
  * Requires a valid session AND the current password. On success the new
  * bcrypt hash is written to the config and the session is refreshed.
  */
-export const POST: RequestHandler = async ({ request, cookies }) => {
+export const POST: RequestHandler = async ({ request, cookies, getClientAddress }) => {
 	const token = cookies.get(SESSION_COOKIE);
 	if (!verifySessionToken(token)) {
 		return json({ message: 'Unauthorized.' }, { status: 401 });
+	}
+
+	if (!rateLimit('login', getClientAddress())) {
+		return json({ message: 'Too many attempts. Please wait and try again.' }, { status: 429 });
 	}
 
 	let body: { currentPassword?: string; newPassword?: string; confirm?: string };

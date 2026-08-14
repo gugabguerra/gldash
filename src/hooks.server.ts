@@ -1,5 +1,6 @@
 import { redirect, type Handle } from '@sveltejs/kit';
 import { SESSION_COOKIE, verifySessionToken } from '$lib/server/auth';
+import { applySecurityHeaders } from '$lib/server/headers';
 
 /**
  * Public endpoints (login page + its API) reachable without a session.
@@ -17,10 +18,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (!authenticated) {
 		if (!PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p))) {
 			if (pathname.startsWith('/api/')) {
-				return new Response(JSON.stringify({ message: 'Unauthorized' }), {
-					status: 401,
-					headers: { 'Content-Type': 'application/json' }
-				});
+				return applySecurityHeaders(
+					new Response(JSON.stringify({ message: 'Unauthorized' }), {
+						status: 401,
+						headers: { 'Content-Type': 'application/json' }
+					})
+				);
 			}
 			throw redirect(303, '/login');
 		}
@@ -28,5 +31,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 		throw redirect(303, '/');
 	}
 
-	return resolve(event);
+	return applySecurityHeaders(await resolve(event));
 };

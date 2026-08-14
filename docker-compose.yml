@@ -9,6 +9,11 @@ services:
     environment:
       - CONFIG_PATH=/app/config/config.yaml
       - PORT=3000
+      - BODY_SIZE_LIMIT=6M
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    pids_limit: 100
     volumes:
       - ./config:/app/config
       - ./static/backgrounds:/app/static/backgrounds

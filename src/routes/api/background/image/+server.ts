@@ -21,7 +21,9 @@ export const GET: RequestHandler = async () => {
 		return new Response(buffer, {
 			headers: {
 				'Content-Type': mimeForExtension(path.extname(filepath).slice(1)),
-				'Cache-Control': 'public, max-age=86400, immutable'
+				// The uploaded background can change, so avoid a long-lived cache
+				// that would keep serving a stale image after a new upload.
+				'Cache-Control': 'public, max-age=3600'
 			}
 		});
 	} catch (err) {

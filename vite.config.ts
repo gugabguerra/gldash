@@ -21,7 +21,38 @@ export default defineConfig({
 				runes: ({ filename }) => filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 
+			// SvelteKit emits an inline bootstrap script; using its built-in CSP
+			// support lets it hash that script (and any inline styles) so the
+			// strict policy below works without inline scripts being blocked.
+			csp: {
+				mode: 'hash',
+				directives: {
+					'script-src': ['self'],
+					'style-src': ['self', 'unsafe-inline'],
+					'img-src': ['self', 'data:', 'https:', 'http:'],
+					'font-src': ['self', 'data:'],
+					'connect-src': ['self'],
+					'object-src': ['none'],
+					'base-uri': ['self'],
+					'form-action': ['self'],
+					'frame-ancestors': ['none']
+				}
+			},
+
+			// adapter-node defaults the request protocol to https (unless
+			// PROTOCOL_HEADER is set), so on plain-HTTP LAN deployments the
+			// server's computed origin never matches the browser's Origin
+			// header, breaking multipart uploads via SvelteKit's CSRF origin
+			// check. That check is redundant here anyway: the session cookie is
+			// httpOnly + SameSite=Lax and every state change is a same-origin
+			// fetch, so cross-site requests cannot carry the cookie. Relying on
+			// SameSite makes uploads work on both HTTP and HTTPS deployments.
+			csrf: {
+				checkOrigin: false
+			},
+
 			// Node adapter is used for the Docker deployment target.
+			// The request body size limit is set at runtime via BODY_SIZE_LIMIT.
 			// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 			adapter: adapter()
 		}),

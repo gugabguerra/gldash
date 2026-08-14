@@ -56,10 +56,13 @@ Icons resolve in priority order:
 ### Security & Authentication
 - **Single-admin password login** — the dashboard is locked behind a login page until you set an admin password (bcrypt-hashed, stored in `config.yaml`).
 - **First-run setup** — on the very first visit (no password configured), the login page acts as a setup screen to create the admin password.
-- **JWT sessions** — successful login issues a signed session cookie (`gldash_session`) valid for 72 hours; on the server side a random persistent secret is generated next to `config.yaml` (or use `JWT_SECRET`).
+- **JWT sessions** — successful login issues a signed session cookie (`gldash_session`) valid for 72 hours; on the server side a random persistent secret is generated next to `config.yaml` (or use `JWT_SECRET`, which must be ≥ 32 characters).
 - **Change password** — from Settings, authenticated with the current password; sessions are refreshed on success.
 - **Recovery** — forgot the password? Empty `auth.adminPasswordHash` in `config.yaml` and restart; the next visit prompts to set a new one.
 - **Logout** — clears the session cookie.
+- **Brute-force protection** — the login and password-reset endpoints are rate limited per client IP (in-memory). Tune via `LOGIN_RATE_LIMIT_MAX` (default `10`) and `LOGIN_RATE_LIMIT_WINDOW_MS` (default `60000`).
+- **Security headers** — every response carries `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy`.
+- **Config file permissions** — `config.yaml` (which holds the bcrypt password hash) is written with mode `0600`. If you pre-create it for a bind mount, do `chmod 600 config/config.yaml`.
 
 ### Productivity & PWA
 - **Spotlight / Quick Search** — open with `Cmd/Ctrl + K`, keyboard-navigable, matched across title, note, and URL.
@@ -77,7 +80,7 @@ Icons resolve in priority order:
 | Icons       | `simple-icons` (server-served SVGs)               |
 | Data/config | `js-yaml` (parsing/writing) + `zod` (validation)  |
 | Drag & drop | `svelte-dnd-action`                               |
-| Images      | `sharp` (background image processing)             |
+| Images      | server-side magic-byte validation of background uploads |
 | PWA         | `@vite-pwa/sveltekit`                             |
 | Runtime     | Node.js (via `@sveltejs/adapter-node`)            |
 
@@ -135,8 +138,13 @@ docker run -d \
 | ------------- | -------------------------------------------- | ----------------------- |
 | `CONFIG_PATH` | Path to the dashboard's `config.yaml`.        | `./config/config.yaml`  |
 | `PORT`        | HTTP port for the Node server.                | `3000`                  |
-| `JWT_SECRET`  | JWT signing secret (sessions). When unset, a persistent random secret is generated and stored next to `config.yaml`. | auto-generated |
+| `BODY_SIZE_LIMIT` | Max request body size (numeric bytes or `K`/`M`/`G` suffix); must exceed the background upload cap. | `512K` |
+| `JWT_SECRET`  | JWT signing secret (sessions), ≥ 32 chars. When unset, a persistent random secret is generated and stored next to `config.yaml`. | auto-generated |
 | `COOKIE_SECURE` | Set `true` to send the session cookie with `Secure` only (e.g. behind TLS). Leave unset on plain-HTTP LANs. | unset |
+| `LOGIN_RATE_LIMIT_MAX` | Max login/reset attempts per client IP per window. | `10` |
+| `LOGIN_RATE_LIMIT_WINDOW_MS` | Rate-limit window in milliseconds. | `60000` |
+
+> **Behind a reverse proxy** — set `ADDRESS_HEADER=x-forwarded-for` and `XFF_DEPTH=1` so rate limiting sees real client IPs, and set `COOKIE_SECURE=true` (TLS). See the [adapter-node docs](https://svelte.dev/docs/kit/adapter-node).
 
 ---
 

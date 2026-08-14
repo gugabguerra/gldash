@@ -8,6 +8,7 @@ import {
 	verifyPassword
 } from '$lib/server/auth';
 import { readAuth } from '$lib/server/yaml';
+import { rateLimit } from '$lib/server/rateLimit';
 
 /**
  * POST /api/auth/login
@@ -18,7 +19,12 @@ import { readAuth } from '$lib/server/yaml';
  * - Otherwise, the password is verified against the stored bcrypt hash.
  * On success a 72-hour session cookie is issued.
  */
-export const POST: RequestHandler = async ({ request, cookies }) => {
+export const POST: RequestHandler = async ({ request, cookies, getClientAddress }) => {
+	const clientIp = getClientAddress();
+	if (!rateLimit('login', clientIp)) {
+		return json({ message: 'Too many attempts. Please wait and try again.' }, { status: 429 });
+	}
+
 	let body: { password?: string };
 	try {
 		body = await request.json();
