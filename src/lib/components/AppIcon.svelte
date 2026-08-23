@@ -13,17 +13,7 @@
 {#await resolveIcon(icon, url)}
 	<div class="animate-pulse rounded bg-slate-700/50" style={`width:${size}px;height:${size}px;`}></div>
 {:then resolved}
-	{#if resolved.kind === 'lucide'}
-		{@const LucideIcon = resolved.component}
-		<LucideIcon width={size} height={size} class="text-slate-200" />
-	{:else if resolved.kind === 'simple-icon'}
-		<div
-			class="text-slate-200 [&_svg]:h-full [&_svg]:w-full [&_svg]:fill-current"
-			style={`width:${size}px;height:${size}px;`}
-		>
-			{@html resolved.svg}
-		</div>
-	{:else}
+	{#if resolved.kind === 'image'}
 		<img
 			src={resolved.src}
 			alt=""
@@ -32,6 +22,19 @@
 			loading="lazy"
 			class="rounded-sm object-contain"
 		/>
+	{:else}
+		<!--
+			Simple Icons are solid shapes and take `fill`; Lucide icons are strokes
+			and already carry stroke="currentColor". Both scale to the wrapper.
+		-->
+		<div
+			class={`text-slate-200 [&_svg]:h-full [&_svg]:w-full ${
+				resolved.kind === 'simple-icon' ? '[&_svg]:fill-current' : ''
+			}`}
+			style={`width:${size}px;height:${size}px;`}
+		>
+			{@html resolved.svg}
+		</div>
 	{/if}
 {:catch}
 	<div class="rounded bg-slate-700/50" style={`width:${size}px;height:${size}px;`}></div>

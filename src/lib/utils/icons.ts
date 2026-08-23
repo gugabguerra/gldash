@@ -1,8 +1,5 @@
-import type { Component } from 'svelte';
-import type { IconProps } from '@lucide/svelte';
-
 export type ResolvedIcon =
-	| { kind: 'lucide'; component: Component<IconProps> }
+	| { kind: 'lucide'; svg: string }
 	| { kind: 'simple-icon'; svg: string }
 	| { kind: 'image'; src: string };
 
@@ -15,37 +12,25 @@ function toKebabCase(slug: string): string {
 		.toLowerCase();
 }
 
-/** Lazily-loaded map of Lucide icon modules, keyed by kebab-case filename (e.g. "server"). */
-const lucideIconModules = import.meta.glob('/node_modules/@lucide/svelte/dist/icons/*.svelte', {
-	import: 'default'
-}) as Record<string, () => Promise<Component<IconProps>>>;
-
 const resolvedIcons = new Map<string, Promise<ResolvedIcon>>();
-
-/** Dynamically imports a single Lucide icon component by its kebab-case slug. */
-async function loadLucideIcon(slug: string): Promise<Component<IconProps> | null> {
-	const path = `/node_modules/@lucide/svelte/dist/icons/${slug}.svelte`;
-	const loader = lucideIconModules[path];
-	if (!loader) return null;
-	try {
-		return await loader();
-	} catch {
-		return null;
-	}
-}
 
 /**
  * Resolves an app's `icon` field into a renderable representation.
  *
  * Resolution order:
- * 1. `lucide:<name>` — a Lucide icon component.
+ * 1. `lucide:<name>` — a Lucide icon SVG.
  * 2. `simple-icons:<slug>` — a Simple Icons brand SVG.
  * 3. `http(s)://...` or `/...` — a direct image URL.
- * 4. Fallback — the bundled dashboard icon.
+ * 4. Fallback — the generic server icon.
+ *
+ * Both icon sets are fetched from the server one icon at a time, so neither
+ * dataset is bundled. Lucide was previously loaded through an
+ * `import.meta.glob` over its icon directory, which inlined a lazy-import entry
+ * for all ~1760 icons into the main chunk on every page load.
  */
 export async function resolveIcon(icon: string | undefined, appUrl: string): Promise<ResolvedIcon> {
 	const value = (icon ?? '').trim();
-	const cacheKey = `${value}\u0000${appUrl}`;
+	const cacheKey = `${value}|${appUrl}`;
 	const cached = resolvedIcons.get(cacheKey);
 	if (cached) return cached;
 
@@ -56,39 +41,34 @@ export async function resolveIcon(icon: string | undefined, appUrl: string): Pro
 
 async function resolveIconUncached(value: string): Promise<ResolvedIcon> {
 	if (value.startsWith('lucide:')) {
-		const slug = toKebabCase(value.slice('lucide:'.length));
-		const component = await loadLucideIcon(slug);
-		if (component) {
-			return { kind: 'lucide', component };
-		}
+		const svg = await fetchIconSvg('lucide', value.slice('lucide:'.length));
+		if (svg) return { kind: 'lucide', svg };
 	}
 
 	if (value.startsWith('simple-icons:')) {
-		const slug = value.slice('simple-icons:'.length);
-		const svg = await loadSimpleIconSvg(slug);
-		if (svg) {
-			return { kind: 'simple-icon', svg };
-		}
+		const svg = await fetchIconSvg('simple-icons', value.slice('simple-icons:'.length));
+		if (svg) return { kind: 'simple-icon', svg };
 	}
 
 	if (/^https?:\/\//i.test(value) || value.startsWith('/')) {
 		return { kind: 'image', src: value };
 	}
 
-	const fallback = await loadLucideIcon('server');
-	if (fallback) return { kind: 'lucide', component: fallback };
+	const fallback = await fetchIconSvg('lucide', 'server');
+	if (fallback) return { kind: 'lucide', svg: fallback };
 	return { kind: 'image', src: '/android-chrome-192x192.png' };
 }
 
 /**
- * Loads a Simple Icons SVG markup string for the given slug, if it exists.
- * Fetched from the server-side `/api/icons/simple-icons/[slug]` endpoint so the
- * (large) icon dataset never ships in the client bundle.
+ * Fetches one icon's SVG markup from its server endpoint. Returns `null` on any
+ * failure so the caller can fall through to the next resolution step.
  */
-async function loadSimpleIconSvg(slug: string): Promise<string | null> {
+async function fetchIconSvg(set: 'lucide' | 'simple-icons', slug: string): Promise<string | null> {
 	const kebab = toKebabCase(slug);
+	if (!kebab) return null;
+
 	try {
-		const response = await fetch(`/api/icons/simple-icons/${kebab}`);
+		const response = await fetch(`/api/icons/${set}/${kebab}`);
 		if (!response.ok) return null;
 		return await response.text();
 	} catch {
