@@ -1,8 +1,13 @@
 import { z } from 'zod';
 import { createId } from '$lib/utils/uuid';
 
-/** Layout modes supported by the dashboard. */
-export const layoutOptions = ['grid', 'fluid', 'table'] as const;
+/** Dashboard structure: how categories are arranged. */
+export const structureOptions = ['board', 'panel', 'wall'] as const;
+export type Structure = (typeof structureOptions)[number];
+
+/** Dashboard density: how apps are drawn inside a category. */
+export const densityOptions = ['rows', 'cards', 'tiles'] as const;
+export type Density = (typeof densityOptions)[number];
 
 export const AppSchema = z.object({
 	id: z.string().min(1),
@@ -62,12 +67,25 @@ const defaultThemeValue: Theme = {
 	backgroundMode: 'default'
 };
 
-export const SettingsSchema = z.object({
-	layout: z.enum(layoutOptions).default('grid'),
-	columns: z.number().int().min(2).max(6).default(4),
-	appName: z.string().min(1).default('GLdash'),
-	theme: ThemeSchema.default(defaultThemeValue)
-});
+export const SettingsSchema = z
+	.object({
+		// Legacy field, accepted on input only so existing configs still validate.
+		layout: z.enum(['grid', 'fluid', 'table']).optional(),
+		structure: z.enum(structureOptions).optional(),
+		density: z.enum(densityOptions).optional(),
+		columns: z.number().int().min(2).max(6).default(4),
+		appName: z.string().min(1).default('GLdash'),
+		theme: ThemeSchema.default(defaultThemeValue)
+	})
+	.transform(({ layout, structure, density, ...rest }) => ({
+		...rest,
+		// Migrate legacy configs: `layout` collapsed two independent choices into
+		// one. `structure` is new and has no legacy equivalent, so it defaults to
+		// "board"; `density` inherits whichever card shape `layout` implied.
+		structure: structure ?? 'board',
+		density:
+			density ?? (layout === 'fluid' ? 'tiles' : layout === 'table' ? 'rows' : 'cards')
+	}));
 
 /**
  * Server-only authentication settings stored in `config.yaml`.
@@ -83,7 +101,8 @@ export type AuthConfig = z.infer<typeof AuthConfigSchema>;
 
 export const ConfigSchema = z.object({
 	settings: SettingsSchema.default({
-		layout: 'grid',
+		structure: 'board',
+		density: 'cards',
 		columns: 4,
 		appName: 'GLdash',
 		theme: defaultThemeValue
@@ -95,4 +114,3 @@ export type App = z.infer<typeof AppSchema>;
 export type Category = z.infer<typeof CategorySchema>;
 export type Settings = z.infer<typeof SettingsSchema>;
 export type Config = z.infer<typeof ConfigSchema>;
-export type LayoutMode = (typeof layoutOptions)[number];

@@ -10,11 +10,11 @@
 		categoryIndex: number;
 		name: string;
 		apps: App[];
-		layout: 'grid' | 'fluid' | 'table';
+		density: 'rows' | 'cards' | 'tiles';
 		columns: number;
 	}
 
-	let { categoryIndex, name, apps, layout, columns }: Props = $props();
+	let { categoryIndex, name, apps, density, columns }: Props = $props();
 
 	const flipDurationMs = 150;
 
@@ -48,7 +48,7 @@
 
 	// In the two-column category layout each category is half the container
 	// width, so cap the app grid at 2 columns to keep cards readable.
-	const effectiveColumns = $derived(layout === 'grid' ? Math.min(columns, 2) : columns);
+	const effectiveColumns = $derived(density === 'cards' ? Math.min(columns, 2) : columns);
 
 	const dndType = 'gldash-apps';
 	const dropTargetStyle = { outline: '2px dashed rgba(148, 163, 184, 0.6)', outlineOffset: '2px' };
@@ -85,7 +85,7 @@
 		{/if}
 	</div>
 
-	{#if layout === 'table'}
+	{#if density === 'rows'}
 		<div class="relative">
 			{#if apps.length === 0}
 				<div
@@ -113,7 +113,7 @@
 				{/each}
 			</div>
 		</div>
-	{:else if layout === 'fluid'}
+	{:else if density === 'tiles'}
 		<div class="relative">
 			{#if apps.length === 0}
 				<div

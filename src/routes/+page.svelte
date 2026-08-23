@@ -34,8 +34,8 @@
 	});
 
 	const theme = $derived(dashboard.config.settings.theme);
-	const layout = $derived(dashboard.config.settings.layout);
-	const categoryGridClass = $derived(layout === 'grid' ? 'lg:grid-cols-2' : '');
+	const density = $derived(dashboard.config.settings.density);
+	const categoryGridClass = $derived(density === 'cards' ? 'lg:grid-cols-2' : '');
 	const backgroundStyle = $derived.by(() => {
 		// Subtle radial gradient overlay for depth — always on top of the background
 		const overlay = `radial-gradient(ellipse at center, rgba(45, 5, 66, 0.08) 0%, transparent 60%), radial-gradient(circle at 15% 25%, rgba(30, 41, 59, 0.04) 0%, transparent 40%), radial-gradient(circle at 85% 75%, rgba(30, 41, 59, 0.04) 0%, transparent 40%)`;
@@ -93,7 +93,7 @@
 								{categoryIndex}
 								name={category.name}
 								apps={category.apps}
-								layout={dashboard.config.settings.layout}
+								density={dashboard.config.settings.density}
 								columns={dashboard.config.settings.columns}
 							/>
 						</div>
