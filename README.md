@@ -26,11 +26,24 @@ Built with **SvelteKit 5 (runes)**, **TypeScript (strict)**, **Tailwind CSS v4**
 ## ✨ Features
 
 ### Dashboard & Layouts
-- **Three layout modes** — switchable from the toolbar:
-  - **Grid** — responsive card grid with an editable column count (2–6).
-  - **Fluid** — auto-fitting flex/masonry layout that fills the width.
-  - **Table/List** — dense rows for fast, at-a-glance scanning.
+Layout is two independent choices, so you can tune *how much fits* separately
+from *how it is grouped*.
+
+- **Three structures** — how categories are arranged (Settings → Layout):
+  - **Board** — categories packed into balanced columns. Uneven category sizes
+    fill the gaps instead of leaving ragged dead space.
+  - **Panel** — the same columns, but each category sits in a bordered
+    container. The most legible choice over a background image.
+  - **Wall** — full-width stacked sections that use the whole window.
+- **Three densities** — how each app is drawn, switchable from the toolbar:
+  - **Rows** — one line per app. Fits the most.
+  - **Cards** — icon and title, with a second line beneath. The default.
+  - **Tiles** — icon-forward, no second line. Best on a wall-mounted screen.
+- **Column count** (2–6) drives both the number of category columns and how many
+  apps sit side by side inside one.
 - **Categories** organize apps into labeled sections.
+- Apps with no `note` show their **host** instead, so the second line tells you
+  whether a service is on the LAN or behind the reverse proxy.
 - **Edit Mode** — toggle editing, then:
   - **Drag-and-drop reordering** of cards within and across categories (`svelte-dnd-action`).
   - **Per-app edit modal** — title, URL, icon, and note.
@@ -154,8 +167,9 @@ All data is validated with **Zod** on every read and write. A minimal `config.ya
 
 ```yaml
 settings:
-  layout: "grid"          # "grid" | "fluid" | "table"
-  columns: 4              # integer, 2 to 6 (grid layout)
+  structure: "board"      # "board" | "panel" | "wall"  — how categories are arranged
+  density: "cards"        # "rows" | "cards" | "tiles"  — how each app is drawn
+  columns: 4              # integer, 2 to 6
   theme:
     background: "#0f172a"
     textColor: "#f8fafc"
@@ -173,6 +187,12 @@ categories:
         icon: "simple-icons:pihole"    # lucide:* | simple-icons:* | URL | fallback
         note: "DNS Primário da Rede"
 ```
+
+> **Upgrading from a `layout:` config?** Earlier versions had a single
+> `layout: "grid" | "fluid" | "table"` key. It is migrated automatically on read
+> — `grid` becomes `density: cards`, `fluid` becomes `tiles`, `table` becomes
+> `rows`, and `structure` defaults to `board`. Nothing needs to be edited by
+> hand; the old key is dropped the next time the file is written.
 
 The **default background** lives at `config/default-bg.jpg` — the same directory as `config.yaml` — and is served from there at request time, so replacing the file (or mounting a new one) updates the dashboard without a rebuild. When `backgroundMode` is `solid`, the image is ignored and the solid color + gradient overlay is used.
 

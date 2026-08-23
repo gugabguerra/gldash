@@ -29,7 +29,8 @@ All data must be strictly validated using **Zod** on both server read/write oper
 
 ```yaml
 settings:
-  layout: "grid" # Options: "grid" | "fluid" | "table"
+  structure: "board" # Options: "board" | "panel" | "wall" — how categories are arranged
+  density: "cards"   # Options: "rows" | "cards" | "tiles" — how each app is drawn
   columns: 4 # Dynamic: 2 to 6
   theme:
     background: "#0f172a"
