@@ -3,7 +3,6 @@
 	import { dashboard } from '$lib/state/dashboard.svelte';
 	import PasswordResetDialog from '$lib/components/PasswordResetDialog.svelte';
 	import AppNameDialog from '$lib/components/AppNameDialog.svelte';
-	import AddCategoryForm from '$lib/components/AddCategoryForm.svelte';
 	import LayoutSettings from '$lib/components/LayoutSettings.svelte';
 	import AppearanceSettings from '$lib/components/AppearanceSettings.svelte';
 
@@ -45,12 +44,6 @@
 			<div
 				class="-mr-3 flex min-h-0 flex-1 flex-col divide-y divide-slate-700/50 overflow-y-auto pr-3"
 			>
-				<!-- Add Category -->
-				<div class="border-b border-slate-700/50 pb-5">
-					<h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Add Category</h3>
-					<AddCategoryForm />
-				</div>
-
 				<!-- Layout -->
 				<div class="py-5">
 					<h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Layout</h3>

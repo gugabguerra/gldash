@@ -2,6 +2,7 @@
 	import { dashboard } from '$lib/state/dashboard.svelte';
 	import { BACKGROUND_DEFAULT_URL } from '$lib/constants';
 	import Toolbar from '$lib/components/Toolbar.svelte';
+	import AddCategoryForm from '$lib/components/AddCategoryForm.svelte';
 	import ColumnLayout from '$lib/components/ColumnLayout.svelte';
 	import WallLayout from '$lib/components/WallLayout.svelte';
 	import EditAppModal from '$lib/components/EditAppModal.svelte';
@@ -67,6 +68,10 @@
 					<WallLayout {columns} {density} />
 				{:else}
 					<ColumnLayout {structure} {columns} {density} />
+				{/if}
+
+				{#if dashboard.editMode}
+					<AddCategoryForm />
 				{/if}
 			{:else}
 				<p class="py-16 text-center text-sm text-slate-500">
