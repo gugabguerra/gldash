@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Upload, Trash2, RotateCcw } from '@lucide/svelte';
 	import { dashboard } from '$lib/state/dashboard.svelte';
-	import { BACKGROUND_DEFAULT_URL, backgroundModes, type BackgroundMode } from '$lib/types';
+	import { BACKGROUND_DEFAULT_URL, backgroundModes, type BackgroundMode } from '$lib/constants';
 	import SegmentedControl from '$lib/components/SegmentedControl.svelte';
 	import ThemeColorPickers from '$lib/components/ThemeColorPickers.svelte';
 

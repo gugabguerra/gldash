@@ -1,5 +1,5 @@
 import type { App, Config } from '$lib/types';
-import { ConfigSchema, DEFAULT_THEME } from '$lib/types';
+import { createEmptyConfig, DEFAULT_THEME } from '$lib/constants';
 import { createId } from '$lib/utils/uuid';
 
 /** Identifies a single app's position within the categories tree. */
@@ -23,7 +23,12 @@ export interface ConfirmDialogState {
  * Holds the live configuration, UI mode flags, and persistence logic.
  */
 class DashboardState {
-	config = $state<Config>(ConfigSchema.parse({}));
+	// A plain literal, not ConfigSchema.parse({}). Parsing here was the only
+	// client-side use of Zod, and it pulled the whole library into the browser
+	// bundle — where its eval-based parser is blocked by the CSP anyway. The
+	// server validates on every read and write; this is just a placeholder until
+	// the real config arrives.
+	config = $state<Config>(createEmptyConfig());
 	editMode = $state(false);
 	saving = $state(false);
 	error = $state<string | null>(null);

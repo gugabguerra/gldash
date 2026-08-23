@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { dashboard } from '$lib/state/dashboard.svelte';
-	import { BACKGROUND_DEFAULT_URL } from '$lib/types';
+	import { BACKGROUND_DEFAULT_URL } from '$lib/constants';
 	import Toolbar from '$lib/components/Toolbar.svelte';
 	import ColumnLayout from '$lib/components/ColumnLayout.svelte';
 	import WallLayout from '$lib/components/WallLayout.svelte';

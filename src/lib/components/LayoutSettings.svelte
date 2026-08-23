@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { dashboard } from '$lib/state/dashboard.svelte';
-	import { densityOptions, structureOptions, type Structure, type Density } from '$lib/types';
+	import { densityOptions, structureOptions, type Structure, type Density } from '$lib/constants';
 	import SegmentedControl from '$lib/components/SegmentedControl.svelte';
 	import StructurePicker from '$lib/components/StructurePicker.svelte';
 
