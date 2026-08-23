@@ -2,9 +2,10 @@
 	import { dndzone, type DndEvent } from 'svelte-dnd-action';
 	import { flip } from 'svelte/animate';
 	import { Plus, Trash2, GripVertical } from '@lucide/svelte';
-	import AppCard from './AppCard.svelte';
+	import AppItem from './AppItem.svelte';
 	import type { App } from '$lib/types';
 	import { dashboard } from '$lib/state/dashboard.svelte';
+	import { innerColumns } from '$lib/utils/columns';
 
 	interface Props {
 		categoryIndex: number;
@@ -39,6 +40,7 @@
 	}
 
 	const gridColsClass: Record<number, string> = {
+		1: 'grid-cols-1',
 		2: 'sm:grid-cols-2',
 		3: 'sm:grid-cols-2 lg:grid-cols-3',
 		4: 'sm:grid-cols-2 lg:grid-cols-4',
@@ -46,9 +48,7 @@
 		6: 'sm:grid-cols-2 lg:grid-cols-6'
 	};
 
-	// In the two-column category layout each category is half the container
-	// width, so cap the app grid at 2 columns to keep cards readable.
-	const effectiveColumns = $derived(density === 'cards' ? Math.min(columns, 2) : columns);
+	const effectiveColumns = $derived(innerColumns(density, columns));
 
 	const dndType = 'gldash-apps';
 	const dropTargetStyle = { outline: '2px dashed rgba(148, 163, 184, 0.6)', outlineOffset: '2px' };
@@ -108,7 +108,7 @@
 			>
 				{#each apps as app (app.id)}
 					<div animate:flip={{ duration: flipDurationMs }}>
-						<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} dense />
+						<AppItem {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} {density} />
 					</div>
 				{/each}
 			</div>
@@ -123,7 +123,7 @@
 				</div>
 			{/if}
 			<div
-				class={`flex flex-wrap min-h-[80px] gap-4`}
+				class={`grid grid-cols-1 gap-4 ${gridColsClass[effectiveColumns] ?? gridColsClass[2]} ${emptyClass}`}
 				use:dndzone={{
 					items: apps,
 					type: dndType,
@@ -135,8 +135,8 @@
 				onfinalize={handleFinalize}
 			>
 				{#each apps as app (app.id)}
-					<div class="w-56" animate:flip={{ duration: flipDurationMs }}>
-						<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} />
+					<div animate:flip={{ duration: flipDurationMs }}>
+						<AppItem {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} {density} />
 					</div>
 				{/each}
 			</div>
@@ -164,7 +164,7 @@
 			>
 				{#each apps as app (app.id)}
 					<div animate:flip={{ duration: flipDurationMs }}>
-						<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} />
+						<AppItem {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} {density} />
 					</div>
 				{/each}
 			</div>

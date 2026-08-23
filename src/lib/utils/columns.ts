@@ -1,3 +1,7 @@
+// Type-only import: erased at build, so this file stays dependency-free and
+// safe to call during SSR.
+import type { Density } from '$lib/types';
+
 /**
  * Distributes items into `columns` buckets, always appending to the shortest
  * bucket so the columns end up close to equal height. Input order is preserved
@@ -72,4 +76,29 @@ export function splitEvenly<T>(items: readonly T[], columns: number): T[][] {
 	}
 
 	return result;
+}
+
+/**
+ * Returns how many apps sit side by side *within one category*, given a density
+ * and the user's columns setting.
+ *
+ * Rules:
+ * - `rows`: always 1 — a row is a full-width line by definition.
+ * - `cards`: up to 2, so a card keeps enough width for its title and host.
+ * - `tiles`: up to 4, since a tile is roughly a quarter the width of a card.
+ *
+ * NOTE: this is currently tuned for the category grid in `+page.svelte`, where
+ * a category occupies half the page. Once `structure` drives the arrangement,
+ * a category's width becomes 1/columns (board, panel) or full width (wall), and
+ * this needs `structure` as a third input to stay correct.
+ *
+ * @param density The app rendering density: rows, cards, or tiles.
+ * @param columns The user's global columns setting (2-6).
+ * @returns Number of apps per row; never less than 1.
+ */
+export function innerColumns(density: Density, columns: number): number {
+	const available = Math.max(1, Math.floor(columns));
+	if (density === 'rows') return 1;
+	if (density === 'tiles') return Math.min(available, 4);
+	return Math.min(available, 2);
 }
