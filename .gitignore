@@ -38,3 +38,7 @@ vite.config.ts.timestamp-*
 
 # Agent worktrees
 .claude/worktrees/
+
+# Local Compose overrides (registry names, host-specific ports)
+docker-compose.override.yml
+compose.override.yml

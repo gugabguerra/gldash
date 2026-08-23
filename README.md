@@ -134,6 +134,41 @@ docker compose up -d --build
 
 This builds the **multi-stage Dockerfile** (`node:22-alpine`), exposes port `3000`, and mounts `./config` into the container so your dashboard configuration **and the default background image** (`config/default-bg.jpg`) persist across restarts. Both are read from the mounted volume at runtime, so editing them takes effect without a rebuild.
 
+### Per-machine overrides (private registry, host-specific ports)
+
+Do **not** edit the tracked `docker-compose.yml` to point at your own registry.
+It works until an upstream change touches the same file, and then `git pull`
+fails mid-deploy with `Your local changes would be overwritten by merge`.
+
+Two ways to keep local settings out of git, both merged by Compose
+automatically — no `-f` flags:
+
+**For a different image name**, set `GLDASH_IMAGE` in `.env` (gitignored):
+
+```dotenv
+GLDASH_IMAGE=registry.example.internal/gldash:latest
+```
+
+The tracked file reads `image: ${GLDASH_IMAGE:-gldash:latest}`, so it falls back
+to a local build when the variable is unset. See `.env.example`.
+
+**For structural changes** — pulling instead of building, extra environment,
+binding to loopback behind a proxy — copy the example override:
+
+```sh
+cp docker-compose.override.example.yml docker-compose.override.yml
+```
+
+`docker-compose.override.yml` is gitignored. Compose merges it on top of
+`docker-compose.yml` on every command, so the tracked file stays pristine and
+`git pull` can never conflict.
+
+Check what a machine actually resolves to with:
+
+```sh
+docker compose config | grep image:
+```
+
 ### Manual build
 
 ```sh

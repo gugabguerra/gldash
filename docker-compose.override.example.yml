@@ -1,0 +1,32 @@
+# Copy to `docker-compose.override.yml` to change how GLdash runs on one machine
+# without touching the tracked `docker-compose.yml`.
+#
+#   cp docker-compose.override.example.yml docker-compose.override.yml
+#
+# Compose merges `docker-compose.override.yml` automatically — no -f flags. The
+# real file is gitignored, so `git pull` can never conflict with your local
+# changes. Editing the tracked compose file instead works right up until an
+# upstream change touches it, and then fails mid-deploy.
+#
+# For just a different image name, `GLDASH_IMAGE` in `.env` is enough:
+#
+#   GLDASH_IMAGE=registry.example.internal/gldash:latest
+#
+# Use this file for structural differences.
+
+services:
+  gldash:
+    # Pull a prebuilt image rather than building on this host. `build` still
+    # exists in the base file, so `docker compose build` keeps working on
+    # whichever machine you build from.
+    image: registry.example.internal/gldash:latest
+
+    # Behind a reverse proxy terminating TLS.
+    # environment:
+    #   - COOKIE_SECURE=true
+    #   - ADDRESS_HEADER=x-forwarded-for
+    #   - XFF_DEPTH=1
+
+    # Bind only to loopback when a proxy fronts the app.
+    # ports:
+    #   - "127.0.0.1:3000:3000"
