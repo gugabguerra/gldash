@@ -85,7 +85,7 @@
 					<input
 						type={show ? 'text' : 'password'}
 						bind:value={password}
-						autocomplete="current-password"
+						autocomplete={needsSetup ? 'new-password' : 'current-password'}
 						placeholder="••••••••"
 						class="w-full rounded-lg border border-slate-700/50 bg-slate-900 py-2.5 pl-10 pr-10 text-sm text-slate-100 placeholder-slate-600 outline-none transition-all duration-150 focus:border-slate-500/60"
 					/>
@@ -134,9 +134,16 @@
 		</form>
 
 		{#if !needsSetup}
-			<p class="mt-6 text-center text-xs opacity-60">
-				Forgot it? Empty <code class="rounded bg-slate-900 px-1.5 py-0.5 font-mono text-[11px]">auth.adminPasswordHash</code> in config.yaml.
-			</p>
+			<details class="mt-6">
+				<summary
+					class="cursor-pointer rounded text-center text-xs opacity-60 transition-opacity duration-150 hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+				>
+					Trouble signing in?
+				</summary>
+				<p class="mt-3 text-center text-xs opacity-75">
+					Empty <code class="rounded bg-slate-900 px-1.5 py-0.5 font-mono text-[11px]">auth.adminPasswordHash</code> in config.yaml.
+				</p>
+			</details>
 		{/if}
 	</div>
 </div>

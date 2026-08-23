@@ -24,7 +24,7 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
 		return json({ message: 'Unauthorized.' }, { status: 401 });
 	}
 
-	if (!rateLimit('login', getClientAddress())) {
+	if (!rateLimit('login', getClientAddress()).allowed) {
 		return json({ message: 'Too many attempts. Please wait and try again.' }, { status: 429 });
 	}
 

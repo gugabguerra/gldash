@@ -34,8 +34,13 @@ const LIMITS: Record<string, Limits> = {
 	}
 };
 
-/** Guards `ip` against exceeding the configured limits for `scope`. */
-export function rateLimit(scope: string, ip: string): boolean {
+interface RateLimitStatus {
+	allowed: boolean;
+	remaining: number;
+}
+
+/** Guards `ip` against exceeding the configured limits for `scope`. Returns allow/deny status and remaining attempts. */
+export function rateLimit(scope: string, ip: string): RateLimitStatus {
 	const limit = LIMITS[scope] ?? { max: 10, windowMs: 60_000 };
 	const key = `${scope}:${ip}`;
 	const now = Date.now();
@@ -45,9 +50,11 @@ export function rateLimit(scope: string, ip: string): boolean {
 	const current = buckets.get(key);
 	if (!current || now >= current.resetAt) {
 		buckets.set(key, { count: 1, resetAt: now + limit.windowMs });
-		return true;
+		return { allowed: true, remaining: limit.max - 1 };
 	}
 
 	current.count += 1;
-	return current.count <= limit.max;
+	const allowed = current.count <= limit.max;
+	const remaining = Math.max(0, limit.max - current.count);
+	return { allowed, remaining };
 }
