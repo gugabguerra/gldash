@@ -71,6 +71,33 @@ Multi-stage `Dockerfile` (`node:22-alpine`) and a working `docker-compose.yml` e
 
 ---
 
+## 🔒 Git Safety (applies to every agent, always)
+
+The working tree is shared. Other agents may be editing other files in it at the
+same time as you, and their work is usually uncommitted.
+
+**Never run a command that discards or relocates uncommitted work.** Specifically,
+these are forbidden unless the user asks for them by name, in that session:
+
+- `git stash` (in any form — it silently removes *everyone's* changes, not just yours)
+- `git reset` (`--hard`, `--mixed`, or bare)
+- `git checkout -- <path>` / `git restore <path>`
+- `git clean`
+- `git commit`, `git push`, `git rebase`, `git merge`, branch creation or deletion
+
+If you believe your own edits are wrong, revert them by editing the files back —
+never with a git command that operates on the whole tree.
+
+`git status`, `git diff`, `git log` and `git show` are always fine.
+
+**Verify your own work before reporting success.** A passing `npm run check` does not
+prove behaviour is correct — TypeScript will happily accept `!someObject`, so a
+changed return type can disable a guard without any error. When you change a
+function's signature, grep for *every* call site and confirm each one still reads
+the value correctly.
+
+---
+
 ## 🚨 Implementation Rules
 
 - Do NOT write bloated monolithic components. Keep logic in separate TS utility files (`src/lib/server/yaml.ts`, `src/lib/utils/icons.ts`) and components under 150 lines of code.
