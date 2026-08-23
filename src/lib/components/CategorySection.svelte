@@ -3,7 +3,7 @@
 	import { flip } from 'svelte/animate';
 	import { Plus, Trash2, GripVertical } from '@lucide/svelte';
 	import AppItem from './AppItem.svelte';
-	import type { App } from '$lib/types';
+	import type { App, Structure } from '$lib/types';
 	import { dashboard } from '$lib/state/dashboard.svelte';
 	import { innerColumns } from '$lib/utils/columns';
 
@@ -11,19 +11,28 @@
 		categoryIndex: number;
 		name: string;
 		apps: App[];
+		structure: Structure;
 		density: 'rows' | 'cards' | 'tiles';
 		columns: number;
 	}
 
-	let { categoryIndex, name, apps, density, columns }: Props = $props();
+	let { categoryIndex, name, apps, structure, density, columns }: Props = $props();
 
 	const flipDurationMs = 150;
 
+	// While a category is being dragged the rendered list briefly contains
+	// svelte-dnd-action's placeholder clone, which has no home in the config
+	// array — so the index can legitimately be -1 for one frame. Writing through
+	// it would throw, so every mutation checks first.
+	const isPlaced = $derived(categoryIndex >= 0);
+
 	function handleConsider(e: CustomEvent<DndEvent<App>>) {
+		if (!isPlaced) return;
 		dashboard.config.categories[categoryIndex].apps = e.detail.items;
 	}
 
 	function handleFinalize(e: CustomEvent<DndEvent<App>>) {
+		if (!isPlaced) return;
 		const newApps = e.detail.items;
 		setTimeout(() => {
 			dashboard.config.categories[categoryIndex].apps = newApps;
@@ -32,10 +41,12 @@
 	}
 
 	function onAddApp() {
+		if (!isPlaced) return;
 		dashboard.addApp(categoryIndex);
 	}
 
 	function onRemoveCategory() {
+		if (!isPlaced) return;
 		dashboard.removeCategory(categoryIndex);
 	}
 
@@ -48,7 +59,7 @@
 		6: 'sm:grid-cols-2 lg:grid-cols-6'
 	};
 
-	const effectiveColumns = $derived(innerColumns(density, columns));
+	const effectiveColumns = $derived(innerColumns(structure, density, columns));
 
 	const dndType = 'gldash-apps';
 	const dropTargetStyle = { outline: '2px dashed rgba(148, 163, 184, 0.6)', outlineOffset: '2px' };

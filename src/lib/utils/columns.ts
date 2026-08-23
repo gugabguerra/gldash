@@ -1,6 +1,6 @@
 // Type-only import: erased at build, so this file stays dependency-free and
 // safe to call during SSR.
-import type { Density } from '$lib/types';
+import type { Density, Structure } from '$lib/types';
 
 /**
  * Distributes items into `columns` buckets, always appending to the shortest
@@ -79,26 +79,48 @@ export function splitEvenly<T>(items: readonly T[], columns: number): T[][] {
 }
 
 /**
- * Returns how many apps sit side by side *within one category*, given a density
- * and the user's columns setting.
+ * Returns how many apps sit side by side *within one category*, given structure,
+ * density, and the user's columns setting.
  *
- * Rules:
- * - `rows`: always 1 — a row is a full-width line by definition.
- * - `cards`: up to 2, so a card keeps enough width for its title and host.
- * - `tiles`: up to 4, since a tile is roughly a quarter the width of a card.
+ * A category's effective width depends on structure:
+ * - board / panel: occupies 1/columns of the page width.
+ * - wall: occupies full page width.
  *
- * NOTE: this is currently tuned for the category grid in `+page.svelte`, where
- * a category occupies half the page. Once `structure` drives the arrangement,
- * a category's width becomes 1/columns (board, panel) or full width (wall), and
- * this needs `structure` as a third input to stay correct.
+ * Rules per structure:
+ * - board / panel (narrow):
+ *   - rows: 1
+ *   - cards: 2 when columns <= 2, else 1
+ *   - tiles: 4 when columns <= 2, else 2 when columns <= 4, else 1
+ * - wall (full width):
+ *   - rows: 1
+ *   - cards: columns
+ *   - tiles: columns * 2
  *
+ * All results are clamped to at least 1.
+ *
+ * @param structure The dashboard structure: board, panel, or wall.
  * @param density The app rendering density: rows, cards, or tiles.
  * @param columns The user's global columns setting (2-6).
  * @returns Number of apps per row; never less than 1.
  */
-export function innerColumns(density: Density, columns: number): number {
-	const available = Math.max(1, Math.floor(columns));
+export function innerColumns(structure: Structure, density: Density, columns: number): number {
+	const numColumns = Math.max(1, Math.floor(columns));
+
+	if (structure === 'wall') {
+		// Full-width categories: scale with global columns
+		if (density === 'rows') return 1;
+		if (density === 'tiles') return numColumns * 2;
+		return numColumns; // cards
+	}
+
+	// board / panel: categories occupy 1/columns of the page
 	if (density === 'rows') return 1;
-	if (density === 'tiles') return Math.min(available, 4);
-	return Math.min(available, 2);
+	if (density === 'tiles') {
+		if (numColumns <= 2) return 4;
+		if (numColumns <= 4) return 2;
+		return 1;
+	}
+	// cards
+	if (numColumns <= 2) return 2;
+	return 1;
 }
