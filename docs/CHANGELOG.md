@@ -8,6 +8,92 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.7.0] - 2026-08-23
+
+Layout becomes two independent axes, and the icon set stops shipping to the
+browser.
+
+### Added
+- **Structures** — `settings.structure` decides how categories are arranged:
+  **Board** (categories packed into balanced columns), **Panel** (the same, each
+  category in a bordered container), **Wall** (full-width stacked sections).
+  Selected from Settings → Layout, with wireframe thumbnails.
+- **Densities** — `settings.density` decides how each app is drawn: **Rows**
+  (~46px), **Cards** (~62px), **Tiles** (icon-forward). Still switchable from
+  the toolbar.
+- **Host fallback** — apps with no `note` show their host instead, so the second
+  line distinguishes LAN addresses from proxied subdomains.
+- **Spotlight keyboard navigation** — arrow keys move a highlight, Enter opens;
+  search now matches hosts as well as titles and notes.
+- **Add Category on the board** — moved out of Settings, next to the categories
+  it creates.
+- **Per-machine Compose overrides** — `${GLDASH_IMAGE}` plus a gitignored
+  `docker-compose.override.yml`, so a deployment can point at a private registry
+  without editing tracked files.
+
+### Changed
+- `settings.layout` is split into `structure` + `density`. Existing configs
+  migrate automatically on read (`grid`→`cards`, `fluid`→`tiles`,
+  `table`→`rows`); the old key is dropped on the next write.
+- Categories are distributed into real flex columns in JS rather than a CSS
+  `column-count` flow, which drag-and-drop cannot measure. Edit mode switches to
+  sequential chunks so a drop can be reconstructed by concatenation.
+- The dashboard is server-rendered again — state is seeded during setup instead
+  of an `$effect`, which had been server-rendering an empty board.
+- Settings drawer regrouped into Layout / Appearance / Dashboard / Account.
+
+### Fixed
+- **Rate limiting on password reset never fired.** `rateLimit()` gained a
+  richer return type and that call site still read it as a boolean; an object is
+  always truthy, so the guard was silently disabled and TypeScript could not see
+  it.
+- **`columns` was ignored.** Grid mode capped the app grid at 2 regardless of
+  the configured value.
+- Recovery instructions are no longer printed to unauthenticated visitors.
+- `autocomplete` is `new-password` during first-run setup.
+- Rows and tiles no longer collapse to a single full-width column.
+
+### Performance
+- **Lucide icons are served from `/api/icons/lucide/[slug]`** instead of an
+  `import.meta.glob`, which inlined a lazy-import entry for all 1760 icons into
+  the main chunk. Mirrors what Simple Icons already did.
+- **Zod no longer ships to the browser.** It was pulled in by a single
+  `ConfigSchema.parse({})` used to build an empty placeholder object, and its
+  eval-based parser was being blocked by the CSP on every load.
+- Largest client chunk: **490K → 91K**.
+- Removed the unused `sharp` dependency.
+
+---
+
+## [v0.6.0] - 2026-08-14
+
+### Added
+- Brand favicon set and improved icon fallback.
+- Scrollable icon picker showing all matches.
+
+### Changed
+- Hardened app security for homelab deployments.
+- Removed the unused `githubRepo` and `dockerImage` app fields.
+
+### Fixed
+- Separator in the settings menu.
+
+---
+
+## [v0.5.0] - 2026-08-13
+
+### Added
+- Icon autocomplete dropdown in the app editor.
+- App clone action.
+- Customizable app name.
+
+### Fixed
+- Icon autocomplete failing silently when `simple-icons` was missing.
+- Production asset 404s.
+- UUID generation without a secure-context requirement.
+
+---
+
 ## [v0.4.0] - 2026-08-09
 
 Single-admin authentication.
