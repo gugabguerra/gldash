@@ -54,22 +54,25 @@
 		</button>
 
 		<button
-			onclick={() => dashboard.openSettings()}
-			class="rounded-md border border-slate-700/50 p-2 text-slate-400 transition-all duration-150 hover:border-slate-500/50 hover:text-slate-200"
-			aria-label="Settings"
-		>
-			<Settings size={16} />
-		</button>
-
-		<button
 			onclick={onToggleEdit}
-			class={`flex items-center gap-2 rounded-md border px-3.5 py-2 text-sm transition-all duration-150 ${dashboard.editMode ? 'border-emerald-500/50 text-emerald-300' : 'border-slate-700/50 text-slate-400 hover:border-slate-500/50'}`}
+			style={dashboard.editMode
+				? 'color: var(--gl-accent); border-color: color-mix(in srgb, var(--gl-accent) 55%, transparent);'
+				: undefined}
+			class={`flex items-center gap-2 rounded-md border px-3.5 py-2 text-sm transition-all duration-150 ${dashboard.editMode ? '' : 'border-slate-700/50 text-slate-400 hover:border-slate-500/50'}`}
 		>
 			{#if dashboard.editMode}
 				<Check size={16} /> Done
 			{:else}
 				<Pencil size={16} /> Edit
 			{/if}
+		</button>
+
+		<button
+			onclick={() => dashboard.openSettings()}
+			class="rounded-md border border-slate-700/50 p-2 text-slate-400 transition-all duration-150 hover:border-slate-500/50 hover:text-slate-200"
+			aria-label="Settings"
+		>
+			<Settings size={16} />
 		</button>
 
 		<button

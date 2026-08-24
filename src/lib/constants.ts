@@ -16,18 +16,17 @@ export const densityOptions = ['rows', 'cards', 'tiles'] as const;
 export type Density = (typeof densityOptions)[number];
 
 /** How the dashboard background is rendered. */
-export const backgroundModes = ['default', 'custom', 'solid'] as const;
+export const backgroundModes = ['solid', 'gradient', 'custom'] as const;
 export type BackgroundMode = (typeof backgroundModes)[number];
 
 /** Built-in default theme colors. Restored by the "Restore Defaults" action. */
 export const DEFAULT_THEME = {
 	background: '#0f172a',
 	textColor: '#f8fafc',
-	cardBackground: '#1e293b'
+	cardBackground: '#1e293b',
+	/** Drives interactive state only — selection, focus, hover, edit mode. */
+	accent: '#34d399'
 } as const;
-
-/** Server URL that serves the default background image from the config dir. */
-export const BACKGROUND_DEFAULT_URL = '/api/background/default';
 
 /** Default dashboard name, used until the user renames it. */
 export const DEFAULT_APP_NAME = 'GLdash';
@@ -48,7 +47,8 @@ export function createEmptyConfig() {
 				background: DEFAULT_THEME.background as string,
 				textColor: DEFAULT_THEME.textColor as string,
 				cardBackground: DEFAULT_THEME.cardBackground as string,
-				backgroundMode: 'default' as BackgroundMode
+				accent: DEFAULT_THEME.accent as string,
+				backgroundMode: 'solid' as BackgroundMode
 			}
 		},
 		categories: []

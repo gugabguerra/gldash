@@ -118,8 +118,9 @@ class DashboardState {
 		theme.background = DEFAULT_THEME.background;
 		theme.textColor = DEFAULT_THEME.textColor;
 		theme.cardBackground = DEFAULT_THEME.cardBackground;
+		theme.accent = DEFAULT_THEME.accent;
 		theme.backgroundImage = undefined;
-		theme.backgroundMode = 'default';
+		theme.backgroundMode = 'solid';
 
 		await this.save();
 	}

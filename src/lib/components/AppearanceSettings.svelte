@@ -1,19 +1,17 @@
 <script lang="ts">
 	import { Upload, Trash2, RotateCcw } from '@lucide/svelte';
 	import { dashboard } from '$lib/state/dashboard.svelte';
-	import { BACKGROUND_DEFAULT_URL, backgroundModes, type BackgroundMode } from '$lib/constants';
+	import { backgroundModes, type BackgroundMode } from '$lib/constants';
 	import SegmentedControl from '$lib/components/SegmentedControl.svelte';
 	import ThemeColorPickers from '$lib/components/ThemeColorPickers.svelte';
 
 	let bgFileInput = $state<HTMLInputElement | null>(null);
 
 	const bgMode = $derived(dashboard.config.settings.theme.backgroundMode);
+	// Only a custom upload has anything to preview; solid and gradient are
+	// rendered from the chosen colour.
 	const bgPreview = $derived(
-		bgMode === 'custom'
-			? dashboard.config.settings.theme.backgroundImage ?? null
-			: bgMode === 'default'
-				? BACKGROUND_DEFAULT_URL
-				: null
+		bgMode === 'custom' ? dashboard.config.settings.theme.backgroundImage ?? null : null
 	);
 
 	async function onUploadBackground(e: Event) {
@@ -65,7 +63,7 @@
 		dashboard.confirm({
 			title: 'Restore Default Styling?',
 			message:
-				'Reset theme colors and revert to the default background (config/default-bg.jpg). Layout and columns stay unchanged.',
+				'Reset the theme colors and accent, and return to a solid background. Layout and columns stay unchanged.',
 			confirmLabel: 'Restore',
 			cancelLabel: 'Cancel',
 			destructive: true,
@@ -93,7 +91,7 @@
 				value={bgMode}
 				options={backgroundModes}
 				onchange={(mode) => setBackgroundMode(mode as BackgroundMode)}
-				labels={{ default: 'Default', custom: 'Custom', solid: 'Solid' }}
+				labels={{ solid: 'Solid', gradient: 'Gradient', custom: 'Custom' }}
 			/>
 		</div>
 
@@ -105,11 +103,7 @@
 					class="h-12 w-12 rounded border border-slate-700/50 object-cover"
 					onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
 				/>
-				<span class="text-xs opacity-75">
-					{bgMode === 'default'
-						? 'Using config/default-bg.jpg'
-						: 'Custom upload'}
-				</span>
+				<span class="text-xs opacity-75">Custom upload</span>
 				{#if bgMode === 'custom'}
 					<button
 						onclick={() => setBackgroundMode('solid')}
@@ -121,7 +115,11 @@
 			</div>
 		{:else}
 			<p class="mt-2 text-xs opacity-75">
-				{bgMode === 'solid' ? 'Using solid color + gradient overlay' : 'No image set'}
+				{bgMode === 'gradient'
+					? 'Background color with a soft light source'
+					: bgMode === 'solid'
+						? 'Flat background color'
+						: 'No image uploaded yet'}
 			</p>
 		{/if}
 

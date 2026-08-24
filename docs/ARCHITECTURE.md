@@ -26,14 +26,14 @@ endpoints. It uses `@sveltejs/adapter-node` at runtime.
                  │  /api/config        read/write config.yaml │
                  │  /api/background    upload / delete image  │
                  │  /api/background/image    serve uploaded   │
-                 │  /api/background/default   serve default   │
                  │  /api/icons/simple-icons/[slug]  brand SVG │
+                 │  /api/icons/lucide/[slug]        icon SVG  │
                  │  /api/auth/login|logout|reset-password     │
                  └───────────────┬────────────────────────────┘
                                  │ filesystem / packages
                  ┌───────────────▼────────────────────────────┐
                  │  $lib/server (yaml.ts, auth.ts, background.ts) │
-                 │  config/config.yaml, config/default-bg.jpg │
+                 │  config/config.yaml                        │
                  │  static/backgrounds/bg-*.jpg (uploads)     │
                  └────────────────────────────────────────────┘
 ```
@@ -85,7 +85,7 @@ A few methods matter:
 - `save()` — posts a `$state.snapshot(config)` to `POST /api/config` and surfaces
   errors via `dashboard.error`.
 - `resetTheme()` — best-effort delete of any uploaded image, resets theme colors
-  to `DEFAULT_THEME`, sets `backgroundMode: 'default'`, then `save()`.
+  to `DEFAULT_THEME` (including `accent`), sets `backgroundMode: 'solid'`, then `save()`.
 
 ---
 
@@ -95,7 +95,7 @@ Everything is validated with **Zod** (`src/lib/types.ts`) on both read and
 write:
 
 - `AppSchema`, `CategorySchema` — leaf entities.
-- `ThemeSchema` — colors plus `backgroundImage?` and `backgroundMode`.
+- `ThemeSchema` — colors (including `accent`) plus `backgroundImage?` and `backgroundMode`.
 
 `ThemeSchema` uses a **`.transform()`** so the parsed value *always* has a
 `backgroundMode`. Because `backgroundMode` is optional on input, existing
@@ -105,7 +105,7 @@ write:
 export const ThemeSchema = z.object({ ... backgroundMode: z.enum([...]).optional() })
   .transform((theme) => ({
     ...theme,
-    backgroundMode: theme.backgroundMode ?? (theme.backgroundImage ? 'custom' : 'default')
+    backgroundMode: theme.backgroundMode ?? (theme.backgroundImage ? 'custom' : 'solid')
   }));
 ```
 
@@ -159,25 +159,25 @@ overlay for readability:
 
 ```ts
 const image =
-    theme.backgroundMode === 'solid'
-        ? null
-        : theme.backgroundImage ?? BACKGROUND_DEFAULT_URL;
+		theme.backgroundMode === 'custom' && theme.backgroundImage
+			? theme.backgroundImage
+			: null;
 ```
 
 | Mode | `backgroundImage` | Rendered |
 | --- | --- | --- |
-| `default` | (unset) | `config/default-bg.jpg` via `GET /api/background/default` |
+| `solid` | (ignored) | the `background` colour alone |
+| `gradient` | (ignored) | the `background` colour plus two low-opacity radials |
 | `custom` | `/api/background/image` | the uploaded file |
 | `solid` | ignored | solid color + gradient overlay only |
 
 - Uploads (`POST /api/background`) are written to `static/backgrounds/bg-<ts>.<ext>`
   and served by `GET /api/background/image`.
-- The **default** image is read live from the config directory (`config/default-bg.jpg`)
-  on every request. Because it's served from disk rather than baked into the
-  static manifest, editing/remounting it takes effect without a rebuild — that's
-  also why `GET /api/background/default` exists.
-- If either image is missing, the endpoint returns `404` and the page simply
-  keeps the underlying `background-color` (graceful degradation).
+- A **custom** upload is read live from the config directory on every request.
+  Because it is served from disk rather than baked into the static manifest,
+  replacing or remounting it takes effect without a rebuild.
+- If the image is missing the endpoint returns `404` and the page keeps the
+  underlying `background-color` (graceful degradation).
 
 Shared server helpers live in `src/lib/server/background.ts`
 (`getBackgroundsDir`, `getBackgroundFile`, `mimeForExtension`).
@@ -278,7 +278,6 @@ The confirmation dialog is a generic, singleton overlay configured via
 | `POST` | `/api/config` | Validate (Zod) and write config back to YAML. |
 | `POST` | `/api/background` | Upload a background image (multipart `image`). |
 | `GET` | `/api/background/image` | Serve the uploaded background image. |
-| `GET` | `/api/background/default` | Serve the shipped `config/default-bg.jpg`. |
 | `DELETE` | `/api/background` | Remove the uploaded background image. |
 | `GET` | `/api/icons/simple-icons/[slug]` | Serve a brand SVG from `simple-icons`. |
 | `POST` | `/api/auth/login` | Verify password (or set it on first run) → 72 h session cookie. |
@@ -300,7 +299,7 @@ The confirmation dialog is a generic, singleton overlay configured via
 | `JWT_SECRET` | JWT signing secret. When unset, a persistent `.session-secret` is generated next to the config file. | auto-generated |
 | `COOKIE_SECURE` | `true` marks the session cookie `Secure` (TLS). Leave unset on plain HTTP. | unset |
 
-The mounted `./config` volume makes both `config.yaml` and `default-bg.jpg`
+The mounted `./config` volume makes `config.yaml`
 editable at runtime without rebuilding the image. Auth state (password hash +
 generated `.session-secret`) also persists there.
 

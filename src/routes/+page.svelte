@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { dashboard } from '$lib/state/dashboard.svelte';
-	import { BACKGROUND_DEFAULT_URL } from '$lib/constants';
 	import Toolbar from '$lib/components/Toolbar.svelte';
 	import AddCategoryForm from '$lib/components/AddCategoryForm.svelte';
 	import ColumnLayout from '$lib/components/ColumnLayout.svelte';
@@ -24,18 +23,28 @@
 	const columns = $derived(dashboard.config.settings.columns);
 	const density = $derived(dashboard.config.settings.density);
 	const backgroundStyle = $derived.by(() => {
-		// Subtle radial gradient overlay for depth — always on top of the background
-		const overlay = `radial-gradient(ellipse at center, rgba(45, 5, 66, 0.08) 0%, transparent 60%), radial-gradient(circle at 15% 25%, rgba(30, 41, 59, 0.04) 0%, transparent 40%), radial-gradient(circle at 85% 75%, rgba(30, 41, 59, 0.04) 0%, transparent 40%)`;
 		const color = theme.background;
-		const vars = `--gl-background:${color}; --gl-text:${theme.textColor}; --gl-card-background:${theme.cardBackground};`;
-		// 'solid' → no image, just the color + gradient; otherwise use the
-		// custom upload, falling back to the shipped default image.
-		const image =
-			theme.backgroundMode === 'solid' ? null : theme.backgroundImage ?? BACKGROUND_DEFAULT_URL;
-		if (image) {
-			return `${vars} background-image: ${overlay}, url('${image}'); background-color: ${color};`;
+		const vars =
+			`--gl-background:${color}; --gl-text:${theme.textColor};` +
+			` --gl-card-background:${theme.cardBackground}; --gl-accent:${theme.accent};`;
+
+		// A custom upload wins outright — an image needs no help from a gradient
+		// underneath it, and layering one only muddies the photo.
+		if (theme.backgroundMode === 'custom' && theme.backgroundImage) {
+			return `${vars} background-image: url('${theme.backgroundImage}'); background-color: ${color};`;
 		}
-		return `${vars} background-image: ${overlay}; background-color: ${color};`;
+
+		if (theme.backgroundMode === 'gradient') {
+			// Two low-opacity radials over the chosen colour: enough to give the
+			// page a light source and stop a large flat area reading as dead,
+			// without becoming a visible colour wash behind the cards.
+			const gradient =
+				'radial-gradient(ellipse 90% 70% at 20% 0%, rgba(148, 163, 184, 0.10), transparent 60%),' +
+				' radial-gradient(ellipse 80% 60% at 85% 100%, rgba(148, 163, 184, 0.06), transparent 55%)';
+			return `${vars} background-image: ${gradient}; background-color: ${color};`;
+		}
+
+		return `${vars} background-color: ${color};`;
 	});
 </script>
 

@@ -21,7 +21,10 @@
 		<button
 			onclick={() => handleChange(option)}
 			aria-pressed={value === option}
-			class={`flex-1 rounded px-2 py-1 text-xs capitalize transition-all duration-150 ${value === option ? 'bg-slate-700/60 text-slate-100' : 'text-slate-400 hover:text-slate-200'}`}
+			style={value === option
+				? 'color: var(--gl-accent); background-color: color-mix(in srgb, var(--gl-accent) 14%, transparent);'
+				: undefined}
+			class={`flex-1 rounded px-2 py-1 text-xs capitalize transition-all duration-150 ${value === option ? 'font-medium' : 'text-slate-400 hover:text-slate-200'}`}
 		>
 			{labels[option] ?? option}
 		</button>

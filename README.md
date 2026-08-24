@@ -51,11 +51,15 @@ from *how it is grouped*.
 
 ### Theming & Background Image
 - **Theme Customizer** — change background, text, and card colors **in real time**, persisted straight to `config.yaml`.
-- **Background image** with three selectable modes (in Settings → Theme):
-  - **Default** — ships with `config/default-bg.jpg` (edit or mount that file to change it; served via `/api/background/default`).
+- **Accent color** — a fourth theme token driving interactive state only:
+  selection, focus rings, card hover and edit mode. Colour appears where
+  something is happening, not as decoration.
+- **Background** with three selectable modes (Settings → Appearance):
+  - **Solid** — the flat background colour. The default.
+  - **Gradient** — the same colour with two very low-opacity radials, giving the
+    page a light source without a visible colour wash.
   - **Custom** — upload a JPEG/PNG/WebP (≤ 5 MB); stored on the server and served via `/api/background/image`, so it works in dev and the Node production build (*not* baked into the static manifest).
-  - **Solid** — plain color + gradient overlay, no image.
-- **Restore Default Styling** — one-click (with confirmation) reset of the theme colors and a return to the default background image; layout and column count are untouched.
+- **Restore Default Styling** — one-click (with confirmation) reset of the theme colors and accent, returning to a solid background; layout and column count are untouched.
 - Subtle radial-gradient overlay keeps cards readable on any image.
 - Clean neutral **slate/zinc** palette, discrete 1px borders, and 150 ms micro-interactions — no "AI slop" gradients or glassmorphism.
 
@@ -132,7 +136,7 @@ npm run preview      # preview the production build
 docker compose up -d --build
 ```
 
-This builds the **multi-stage Dockerfile** (`node:22-alpine`), exposes port `3000`, and mounts `./config` into the container so your dashboard configuration **and the default background image** (`config/default-bg.jpg`) persist across restarts. Both are read from the mounted volume at runtime, so editing them takes effect without a rebuild.
+This builds the **multi-stage Dockerfile** (`node:22-alpine`), exposes port `3000`, and mounts `./config` into the container so your dashboard configuration persists across restarts. It is read from the mounted volume at runtime, so editing `config.yaml` takes effect without a rebuild.
 
 ### Per-machine overrides (private registry, host-specific ports)
 
@@ -209,7 +213,8 @@ settings:
     background: "#0f172a"
     textColor: "#f8fafc"
     cardBackground: "#1e293b"
-    backgroundMode: "default"        # "default" | "custom" | "solid"
+    accent: "#34d399"                # interactive state only
+    backgroundMode: "solid"          # "solid" | "gradient" | "custom"
     backgroundImage: ""              # uploaded image URL, only used when custom
 
 categories:
@@ -230,7 +235,7 @@ categories:
 > run it once on v0.7.0 and save, or set the two keys by hand:
 > `grid` → `density: cards`, `fluid` → `tiles`, `table` → `rows`.
 
-The **default background** lives at `config/default-bg.jpg` — the same directory as `config.yaml` — and is served from there at request time, so replacing the file (or mounting a new one) updates the dashboard without a rebuild. When `backgroundMode` is `solid`, the image is ignored and the solid color + gradient overlay is used.
+`backgroundImage` is only read when `backgroundMode` is `custom`; `solid` and `gradient` render from `background` alone.
 
 > **`auth` — the admin password block.** `config.yaml` also stores an
 > `auth.adminPasswordHash` value (a bcrypt hash, never a literal password). It is
@@ -256,7 +261,6 @@ The **default background** lives at `config/default-bg.jpg` — the same directo
 | `GET`    | `/api/config`                      | Returns the validated config as JSON.                  |
 | `POST`   | `/api/config`                      | Validates with Zod and writes the config back to YAML. |
 | `POST`   | `/api/background`                  | Uploads a background image (multipart field `image`).  |
-| `GET`    | `/api/background/default`          | Serves the shipped default image (`config/default-bg.jpg`). |
 | `GET`    | `/api/background/image`            | Serves the current custom (uploaded) background image. |
 | `DELETE` | `/api/background`                  | Removes the uploaded background image.                |
 | `GET`    | `/api/icons/simple-icons/<slug>`   | Serves a brand SVG by Simple Icons slug.               |
@@ -292,7 +296,6 @@ src/
     └── api/
         ├── config/        # GET/POST config
         ├── background/    # POST upload, DELETE
-        │   ├── default/   # GET serve config/default-bg.jpg
         │   └── image/     # GET serve uploaded image
         ├── auth/          # login, logout, reset-password
         └── icons/simple-icons/[slug]/   # server-side brand SVGs

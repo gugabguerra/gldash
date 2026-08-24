@@ -5,7 +5,6 @@ import {
 	densityOptions,
 	structureOptions,
 	DEFAULT_THEME,
-	BACKGROUND_DEFAULT_URL,
 	DEFAULT_APP_NAME
 } from '$lib/constants';
 
@@ -16,8 +15,7 @@ export {
 	backgroundModes,
 	densityOptions,
 	structureOptions,
-	DEFAULT_THEME,
-	BACKGROUND_DEFAULT_URL
+	DEFAULT_THEME
 } from '$lib/constants';
 export type { BackgroundMode, Density, Structure } from '$lib/constants';
 
@@ -45,14 +43,18 @@ export const ThemeSchema = z
 		background: z.string().default(DEFAULT_THEME.background),
 		textColor: z.string().default(DEFAULT_THEME.textColor),
 		cardBackground: z.string().default(DEFAULT_THEME.cardBackground),
+		accent: z.string().default(DEFAULT_THEME.accent),
 		backgroundImage: z.string().optional(),
-		backgroundMode: z.enum(backgroundModes).optional()
+		// `.catch` rather than a bare enum: a config written by an older version
+		// may carry a mode that no longer exists, and an unknown value should
+		// fall back rather than fail the whole config load.
+		backgroundMode: z.enum(backgroundModes).optional().catch(undefined)
 	})
 	.transform((theme) => ({
 		...theme,
-		// Migrate legacy configs: an existing image URL implies "custom";
-		// otherwise default to the default background image.
-		backgroundMode: theme.backgroundMode ?? (theme.backgroundImage ? 'custom' : 'default')
+		// An uploaded image implies "custom"; everything else falls back to the
+		// plain colour ground.
+		backgroundMode: theme.backgroundMode ?? (theme.backgroundImage ? 'custom' : 'solid')
 	}));
 
 /** A validated theme with an always-present background mode. */
@@ -62,7 +64,8 @@ const defaultThemeValue: Theme = {
 	background: DEFAULT_THEME.background,
 	textColor: DEFAULT_THEME.textColor,
 	cardBackground: DEFAULT_THEME.cardBackground,
-	backgroundMode: 'default'
+	accent: DEFAULT_THEME.accent,
+	backgroundMode: 'solid'
 };
 
 export const SettingsSchema = z.object({

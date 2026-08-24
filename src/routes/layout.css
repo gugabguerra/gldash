@@ -4,6 +4,7 @@
 	--gl-background: #0f172a;
 	--gl-text: #f8fafc;
 	--gl-card-background: #1e293b;
+	--gl-accent: #34d399;
 	--gl-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 4px rgba(15, 23, 42, 0.1);
 	--gl-shadow-hover: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
 }
@@ -27,8 +28,19 @@ body {
 	transition: box-shadow 150ms ease, border-color 150ms ease;
 }
 
+/*
+ * Defined after Tailwind's import so it wins over the `hover:border-*` utility
+ * on the card itself. The accent appears on interaction only — hover, focus,
+ * selection, edit mode — so it reads as state rather than decoration.
+ */
 .card:hover {
 	box-shadow: var(--gl-shadow-hover);
+	border-color: color-mix(in srgb, var(--gl-accent) 45%, transparent);
+}
+
+:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--gl-accent) 70%, transparent);
+	outline-offset: 2px;
 }
 
 /* Toolbar shadow for depth. */

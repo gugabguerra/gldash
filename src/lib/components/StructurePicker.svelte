@@ -21,7 +21,7 @@
 		<button
 			onclick={() => onchange(option.id)}
 			aria-pressed={value === option.id}
-			class={`flex flex-col items-center gap-1.5 rounded-md border-2 p-2 transition-all duration-150 ${value === option.id ? 'border-slate-400 bg-slate-700/30' : 'border-slate-700/50 hover:border-slate-600/50'}`}
+			class={`flex flex-col items-center gap-1.5 rounded-md border-2 p-2 transition-all duration-150 ${value === option.id ? 'border-[var(--gl-accent)] bg-[color-mix(in_srgb,var(--gl-accent)_12%,transparent)]' : 'border-slate-700/50 hover:border-slate-600/50'}`}
 		>
 			<!-- Wireframe thumbnails (54×36) -->
 			<div class="flex h-9 w-14 gap-0.5 rounded border border-slate-600/40 bg-slate-800/20 p-0.5">
