@@ -51,6 +51,12 @@ from *how it is grouped*.
 
 ### Theming & Background Image
 - **Theme Customizer** — change background, text, and card colors **in real time**, persisted straight to `config.yaml`.
+- **Typography** — IBM Plex Sans for the interface, IBM Plex Mono for hosts and
+  other data, and Sora for the dashboard name. All three are self-hosted as
+  woff2 in `static/fonts/` (~116 KB, split by `unicode-range` so latin-ext is
+  only fetched when a character needs it). The app's CSP sets
+  `font-src 'self' data:`, so a font CDN would be blocked — and self-hosting
+  means no third-party request and no internet dependency on the LAN.
 - **Accent color** — a fourth theme token driving interactive state only:
   selection, focus rings, card hover and edit mode. Colour appears where
   something is happening, not as decoration.
