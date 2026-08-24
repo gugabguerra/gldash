@@ -8,7 +8,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [v0.7.0] - 2026-08-23
+## [v0.7.0] - 2026-08-24
 
 Layout becomes two independent axes, and the icon set stops shipping to the
 browser.
