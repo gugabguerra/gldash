@@ -8,6 +8,51 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.8.0] - 2026-08-24
+
+Colour and typography. The dashboard had shipped white-on-navy in whatever font
+the OS provided; it now has an accent token, a real type stack, and a background
+that is not a photograph by default.
+
+### Added
+- **`theme.accent`** — a fourth colour token, applied to interactive state only:
+  the selected structure, density and column count, the active background mode,
+  card hover borders, focus rings and edit mode. Nothing static is tinted, so
+  the colour reads as state rather than decoration.
+- **`gradient` background mode** — the background colour plus two very
+  low-opacity radials, giving a large flat area a light source without becoming
+  a visible wash behind the cards. This is now the default.
+- **Self-hosted typography** — IBM Plex Sans for the interface, IBM Plex Mono
+  for hosts and other data, Sora for the dashboard name. 116 KB of woff2 in
+  `static/fonts/`, split by `unicode-range` so latin-ext is only fetched when a
+  character needs it. Self-hosted because the app's CSP sets
+  `font-src 'self' data:`, and so a LAN dashboard has no internet dependency.
+
+### Changed
+- Default palette is now emerald text (`#34d399`) on navy with a teal accent
+  (`#36d3d0`). Contrast measures 9.3:1 against the page and 7.6:1 against a
+  card, both past AAA. Note that text and accent are now neighbouring hues, so
+  the accent has less room to signal state than it did against white text.
+- **Edit and Settings swap places** in the toolbar.
+- `backgroundMode` parses with `.catch()`, so a config carrying a mode that no
+  longer exists falls back instead of failing the entire config load.
+- A custom background image no longer has the old radial overlay composited on
+  top of it — an image needs no gradient underneath, and layering one only
+  muddied the photo.
+- README screenshots recaptured against a generic homelab config. Every previous
+  image predated the structure work and contradicted the text describing it.
+
+### Removed
+- **The `default` background mode**, the shipped `config/default-bg.jpg`, and
+  the `GET /api/background/default` endpoint that served it. A fresh install now
+  starts on a colour rather than a photo; `custom` uploads are unchanged.
+- The one-time `layout` → `structure`/`density` migration added in v0.7.0. It
+  was single-use by design: migration happens on read and the converted values
+  are written back on the next save. An old `layout:` key is now ignored rather
+  than converted.
+
+---
+
 ## [v0.7.0] - 2026-08-24
 
 Layout becomes two independent axes, and the icon set stops shipping to the
