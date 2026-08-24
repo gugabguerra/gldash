@@ -65,25 +65,13 @@ const defaultThemeValue: Theme = {
 	backgroundMode: 'default'
 };
 
-export const SettingsSchema = z
-	.object({
-		// Legacy field, accepted on input only so existing configs still validate.
-		layout: z.enum(['grid', 'fluid', 'table']).optional(),
-		structure: z.enum(structureOptions).optional(),
-		density: z.enum(densityOptions).optional(),
-		columns: z.number().int().min(2).max(6).default(4),
-		appName: z.string().min(1).default(DEFAULT_APP_NAME),
-		theme: ThemeSchema.default(defaultThemeValue)
-	})
-	.transform(({ layout, structure, density, ...rest }) => ({
-		...rest,
-		// Migrate legacy configs: `layout` collapsed two independent choices into
-		// one. `structure` is new and has no legacy equivalent, so it defaults to
-		// "board"; `density` inherits whichever card shape `layout` implied.
-		structure: structure ?? 'board',
-		density:
-			density ?? (layout === 'fluid' ? 'tiles' : layout === 'table' ? 'rows' : 'cards')
-	}));
+export const SettingsSchema = z.object({
+	structure: z.enum(structureOptions).default('board'),
+	density: z.enum(densityOptions).default('cards'),
+	columns: z.number().int().min(2).max(6).default(4),
+	appName: z.string().min(1).default(DEFAULT_APP_NAME),
+	theme: ThemeSchema.default(defaultThemeValue)
+});
 
 /**
  * Server-only authentication settings stored in `config.yaml`.

@@ -223,11 +223,12 @@ categories:
         note: "DNS Primário da Rede"
 ```
 
-> **Upgrading from a `layout:` config?** Earlier versions had a single
-> `layout: "grid" | "fluid" | "table"` key. It is migrated automatically on read
-> — `grid` becomes `density: cards`, `fluid` becomes `tiles`, `table` becomes
-> `rows`, and `structure` defaults to `board`. Nothing needs to be edited by
-> hand; the old key is dropped the next time the file is written.
+> **Upgrading from a pre-0.7 `layout:` config?** The one-time migration that
+> converted `layout` into `structure` + `density` shipped in v0.7.0 and has since
+> been removed. A `layout:` key is now simply ignored, and `structure` and
+> `density` fall back to `board` and `cards`. To convert an old config, either
+> run it once on v0.7.0 and save, or set the two keys by hand:
+> `grid` → `density: cards`, `fluid` → `tiles`, `table` → `rows`.
 
 The **default background** lives at `config/default-bg.jpg` — the same directory as `config.yaml` — and is served from there at request time, so replacing the file (or mounting a new one) updates the dashboard without a rebuild. When `backgroundMode` is `solid`, the image is ignored and the solid color + gradient overlay is used.
 
