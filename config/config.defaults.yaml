@@ -11,12 +11,12 @@ settings:
   appName: GLdash
   theme:
     background: '#0f172a'
-    textColor: '#f8fafc'
+    textColor: '#34d399'
     cardBackground: '#1e293b'
     # Drives interactive state only: selection, focus, hover, edit mode.
-    accent: '#34d399'
+    accent: '#36d3d0'
     # solid | gradient | custom
-    backgroundMode: solid
+    backgroundMode: gradient
 
 categories:
   - id: infra

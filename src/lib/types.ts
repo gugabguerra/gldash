@@ -54,7 +54,7 @@ export const ThemeSchema = z
 		...theme,
 		// An uploaded image implies "custom"; everything else falls back to the
 		// plain colour ground.
-		backgroundMode: theme.backgroundMode ?? (theme.backgroundImage ? 'custom' : 'solid')
+		backgroundMode: theme.backgroundMode ?? (theme.backgroundImage ? 'custom' : 'gradient')
 	}));
 
 /** A validated theme with an always-present background mode. */
@@ -65,7 +65,7 @@ const defaultThemeValue: Theme = {
 	textColor: DEFAULT_THEME.textColor,
 	cardBackground: DEFAULT_THEME.cardBackground,
 	accent: DEFAULT_THEME.accent,
-	backgroundMode: 'solid'
+	backgroundMode: 'gradient'
 };
 
 export const SettingsSchema = z.object({

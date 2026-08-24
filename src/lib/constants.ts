@@ -22,10 +22,10 @@ export type BackgroundMode = (typeof backgroundModes)[number];
 /** Built-in default theme colors. Restored by the "Restore Defaults" action. */
 export const DEFAULT_THEME = {
 	background: '#0f172a',
-	textColor: '#f8fafc',
+	textColor: '#34d399',
 	cardBackground: '#1e293b',
 	/** Drives interactive state only — selection, focus, hover, edit mode. */
-	accent: '#34d399'
+	accent: '#36d3d0'
 } as const;
 
 /** Default dashboard name, used until the user renames it. */
@@ -48,7 +48,7 @@ export function createEmptyConfig() {
 				textColor: DEFAULT_THEME.textColor as string,
 				cardBackground: DEFAULT_THEME.cardBackground as string,
 				accent: DEFAULT_THEME.accent as string,
-				backgroundMode: 'solid' as BackgroundMode
+				backgroundMode: 'gradient' as BackgroundMode
 			}
 		},
 		categories: []

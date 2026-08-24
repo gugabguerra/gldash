@@ -120,7 +120,7 @@ class DashboardState {
 		theme.cardBackground = DEFAULT_THEME.cardBackground;
 		theme.accent = DEFAULT_THEME.accent;
 		theme.backgroundImage = undefined;
-		theme.backgroundMode = 'solid';
+		theme.backgroundMode = 'gradient';
 
 		await this.save();
 	}
