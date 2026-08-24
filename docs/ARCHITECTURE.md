@@ -205,21 +205,47 @@ placeholder while loading.
 
 ## 7. Layouts & drag-and-drop
 
-`CategorySection.svelte` renders the same app list in one of three layouts
-selected by `settings.layout`:
+Layout is two independent settings. `settings.structure` decides how categories
+are arranged; `settings.density` decides how each app is drawn. `+page.svelte`
+picks a structure component, which renders `CategorySection.svelte`, which
+renders `AppItem.svelte` at the chosen density.
 
-- **grid** — a CSS grid whose column count comes from `settings.columns`
-  (mapped to responsive Tailwind classes).
-- **fluid** — `flex flex-wrap` with fixed-width cards.
-- **table** — dense vertical list of rows.
+- **structure** — `board` and `panel` share `ColumnLayout.svelte` (panel adds a
+  bordered container per category); `wall` uses `WallLayout.svelte` for
+  full-width stacked sections.
+- **density** — `rows`, `cards` and `tiles` are three branches inside
+  `AppItem.svelte`. `innerColumns(structure, density, columns)` in
+  `utils/columns.ts` decides how many apps sit side by side, because a category
+  is 1/`columns` of the page under board/panel but full width under wall.
 
-Reordering is handled entirely by `svelte-dnd-action`:
+### Why the columns are built in JS
 
-- Each list is a `dndzone` with `type: 'gldash-apps'`, so items drag across
-  lists within the same category type.
-- `onconsider` writes the provisional reorder into the reactive config (live
-  visual feedback).
-- `onfinalize` commits it to the config and calls `dashboard.save()`.
+Board and panel distribute categories with `packColumns()` rather than CSS
+`column-count`. A multi-column flow has no stable per-column box geometry, and
+`svelte-dnd-action` measures element rects to work out drop targets — so the
+columns have to be real elements.
+
+The split is `$derived`, never `$state` seeded by an `$effect`: effects do not
+run during SSR, so an effect-filled version server-renders an empty grid and
+only populates after hydration.
+
+### Reordering
+
+Handled entirely by `svelte-dnd-action`, at two levels:
+
+- **Apps** — each category's list is a `dndzone` with `type: 'gldash-apps'`.
+- **Categories** — each *column* is a `dndzone` with
+  `type: 'gldash-categories'`, which is what lets a category be dragged from one
+  column to another.
+
+`onconsider` writes only to local drag state, never the config. `onfinalize`
+commits and calls `dashboard.save()`.
+
+The mode switch matters here: view mode packs columns by height, but **edit mode
+switches to `splitEvenly()`**. Sequential chunks mean the flat category order is
+exactly `concat(col0, col1, …)`, so a drop can be reconstructed with a single
+`.flat()`. Height-balanced packing has no clean inverse, and re-packing mid-drag
+would make the board move under the cursor.
 - `dragDisabled` is bound to `dashboard.editMode`, so dragging only happens in
   Edit Mode.
 

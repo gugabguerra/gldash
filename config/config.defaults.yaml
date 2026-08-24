@@ -3,7 +3,10 @@
 auth:
   adminPasswordHash: ''
 settings:
-  layout: grid
+  # structure: how categories are arranged — board | panel | wall
+  # density:   how apps are drawn inside them — rows | cards | tiles
+  structure: board
+  density: cards
   columns: 4
   appName: GLdash
   theme:

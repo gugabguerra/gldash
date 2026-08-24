@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { Search, Settings, Pencil, Check, LayoutGrid, Rows3, Table, LogOut } from '@lucide/svelte';
+	import { Search, Settings, Pencil, Check, LayoutGrid, Rows3, Grid2x2, LogOut } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { dashboard } from '$lib/state/dashboard.svelte';
-	import type { LayoutMode } from '$lib/types';
+	import type { Density } from '$lib/types';
 
-	const layoutIcons: Record<LayoutMode, typeof LayoutGrid> = {
-		grid: LayoutGrid,
-		fluid: Rows3,
-		table: Table
+	const densityIcons: Record<Density, typeof LayoutGrid> = {
+		rows: Rows3,
+		cards: LayoutGrid,
+		tiles: Grid2x2
 	};
 
-	function setLayout(layout: LayoutMode) {
-		dashboard.config.settings.layout = layout;
+	function setDensity(density: Density) {
+		dashboard.config.settings.density = density;
 		dashboard.save();
 	}
 
@@ -32,12 +32,12 @@
 
 	<div class="flex items-center gap-2">
 		<div class="flex items-center gap-1 rounded-md border border-slate-700/50 p-1">
-			{#each ['grid', 'fluid', 'table'] as const as mode}
-				{@const Icon = layoutIcons[mode]}
+			{#each ['rows', 'cards', 'tiles'] as const as density}
+				{@const Icon = densityIcons[density]}
 				<button
-					onclick={() => setLayout(mode)}
-					class={`rounded p-2 transition-all duration-150 ${dashboard.config.settings.layout === mode ? 'bg-slate-700/60 text-slate-100' : 'text-slate-400 hover:text-slate-200'}`}
-					aria-label={`${mode} layout`}
+					onclick={() => setDensity(density)}
+					class={`rounded p-2 transition-all duration-150 ${dashboard.config.settings.density === density ? 'bg-slate-700/60 text-slate-100' : 'text-slate-400 hover:text-slate-200'}`}
+					aria-label={`${density} layout`}
 				>
 					<Icon size={18} />
 				</button>

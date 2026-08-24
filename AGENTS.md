@@ -29,7 +29,8 @@ All data must be strictly validated using **Zod** on both server read/write oper
 
 ```yaml
 settings:
-  layout: "grid" # Options: "grid" | "fluid" | "table"
+  structure: "board" # Options: "board" | "panel" | "wall" — how categories are arranged
+  density: "cards"   # Options: "rows" | "cards" | "tiles" — how each app is drawn
   columns: 4 # Dynamic: 2 to 6
   theme:
     background: "#0f172a"
@@ -68,6 +69,33 @@ To avoid generic "AI slop" visual patterns, strictly follow these visual UI/UX r
 ## 🐳 Dockerization Standard
 
 Multi-stage `Dockerfile` (`node:22-alpine`) and a working `docker-compose.yml` example exposing port `3000` and mounting the `./config:/app/config` volume.
+
+---
+
+## 🔒 Git Safety (applies to every agent, always)
+
+The working tree is shared. Other agents may be editing other files in it at the
+same time as you, and their work is usually uncommitted.
+
+**Never run a command that discards or relocates uncommitted work.** Specifically,
+these are forbidden unless the user asks for them by name, in that session:
+
+- `git stash` (in any form — it silently removes *everyone's* changes, not just yours)
+- `git reset` (`--hard`, `--mixed`, or bare)
+- `git checkout -- <path>` / `git restore <path>`
+- `git clean`
+- `git commit`, `git push`, `git rebase`, `git merge`, branch creation or deletion
+
+If you believe your own edits are wrong, revert them by editing the files back —
+never with a git command that operates on the whole tree.
+
+`git status`, `git diff`, `git log` and `git show` are always fine.
+
+**Verify your own work before reporting success.** A passing `npm run check` does not
+prove behaviour is correct — TypeScript will happily accept `!someObject`, so a
+changed return type can disable a guard without any error. When you change a
+function's signature, grep for *every* call site and confirm each one still reads
+the value correctly.
 
 ---
 

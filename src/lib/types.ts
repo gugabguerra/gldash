@@ -1,8 +1,25 @@
 import { z } from 'zod';
 import { createId } from '$lib/utils/uuid';
+import {
+	backgroundModes,
+	densityOptions,
+	structureOptions,
+	DEFAULT_THEME,
+	BACKGROUND_DEFAULT_URL,
+	DEFAULT_APP_NAME
+} from '$lib/constants';
 
-/** Layout modes supported by the dashboard. */
-export const layoutOptions = ['grid', 'fluid', 'table'] as const;
+// Re-exported so server code can keep importing schema and constants from one
+// place. Client code should import from `$lib/constants` directly — importing
+// from here drags Zod into the browser bundle.
+export {
+	backgroundModes,
+	densityOptions,
+	structureOptions,
+	DEFAULT_THEME,
+	BACKGROUND_DEFAULT_URL
+} from '$lib/constants';
+export type { BackgroundMode, Density, Structure } from '$lib/constants';
 
 export const AppSchema = z.object({
 	id: z.string().min(1),
@@ -22,20 +39,6 @@ export const CategorySchema = z.object({
 	name: z.string().min(1),
 	apps: z.array(AppSchema).default([])
 });
-
-/** Built-in default theme colors. Restored by the "Restore Defaults" action. */
-export const DEFAULT_THEME = {
-	background: '#0f172a',
-	textColor: '#f8fafc',
-	cardBackground: '#1e293b'
-} as const;
-
-/** How the dashboard background is rendered. */
-export const backgroundModes = ['default', 'custom', 'solid'] as const;
-export type BackgroundMode = (typeof backgroundModes)[number];
-
-/** Server URL that serves the default background image from the config dir. */
-export const BACKGROUND_DEFAULT_URL = '/api/background/default';
 
 export const ThemeSchema = z
 	.object({
@@ -62,12 +65,25 @@ const defaultThemeValue: Theme = {
 	backgroundMode: 'default'
 };
 
-export const SettingsSchema = z.object({
-	layout: z.enum(layoutOptions).default('grid'),
-	columns: z.number().int().min(2).max(6).default(4),
-	appName: z.string().min(1).default('GLdash'),
-	theme: ThemeSchema.default(defaultThemeValue)
-});
+export const SettingsSchema = z
+	.object({
+		// Legacy field, accepted on input only so existing configs still validate.
+		layout: z.enum(['grid', 'fluid', 'table']).optional(),
+		structure: z.enum(structureOptions).optional(),
+		density: z.enum(densityOptions).optional(),
+		columns: z.number().int().min(2).max(6).default(4),
+		appName: z.string().min(1).default(DEFAULT_APP_NAME),
+		theme: ThemeSchema.default(defaultThemeValue)
+	})
+	.transform(({ layout, structure, density, ...rest }) => ({
+		...rest,
+		// Migrate legacy configs: `layout` collapsed two independent choices into
+		// one. `structure` is new and has no legacy equivalent, so it defaults to
+		// "board"; `density` inherits whichever card shape `layout` implied.
+		structure: structure ?? 'board',
+		density:
+			density ?? (layout === 'fluid' ? 'tiles' : layout === 'table' ? 'rows' : 'cards')
+	}));
 
 /**
  * Server-only authentication settings stored in `config.yaml`.
@@ -83,9 +99,10 @@ export type AuthConfig = z.infer<typeof AuthConfigSchema>;
 
 export const ConfigSchema = z.object({
 	settings: SettingsSchema.default({
-		layout: 'grid',
+		structure: 'board',
+		density: 'cards',
 		columns: 4,
-		appName: 'GLdash',
+		appName: DEFAULT_APP_NAME,
 		theme: defaultThemeValue
 	}),
 	categories: z.array(CategorySchema).default([])
@@ -95,4 +112,3 @@ export type App = z.infer<typeof AppSchema>;
 export type Category = z.infer<typeof CategorySchema>;
 export type Settings = z.infer<typeof SettingsSchema>;
 export type Config = z.infer<typeof ConfigSchema>;
-export type LayoutMode = (typeof layoutOptions)[number];

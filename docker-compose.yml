@@ -1,7 +1,10 @@
 services:
   gldash:
     build: .
-    image: gldash:latest
+    # Overridable so the same file works for a local build and for pulling a
+    # prebuilt image from a private registry. Set GLDASH_IMAGE in .env (which is
+    # gitignored) — see docker-compose.override.example.yml.
+    image: ${GLDASH_IMAGE:-gldash:latest}
     container_name: gldash
     restart: unless-stopped
     ports:

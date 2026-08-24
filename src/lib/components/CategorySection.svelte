@@ -2,27 +2,37 @@
 	import { dndzone, type DndEvent } from 'svelte-dnd-action';
 	import { flip } from 'svelte/animate';
 	import { Plus, Trash2, GripVertical } from '@lucide/svelte';
-	import AppCard from './AppCard.svelte';
-	import type { App } from '$lib/types';
+	import AppItem from './AppItem.svelte';
+	import type { App, Structure } from '$lib/types';
 	import { dashboard } from '$lib/state/dashboard.svelte';
+	import { innerColumns } from '$lib/utils/columns';
 
 	interface Props {
 		categoryIndex: number;
 		name: string;
 		apps: App[];
-		layout: 'grid' | 'fluid' | 'table';
+		structure: Structure;
+		density: 'rows' | 'cards' | 'tiles';
 		columns: number;
 	}
 
-	let { categoryIndex, name, apps, layout, columns }: Props = $props();
+	let { categoryIndex, name, apps, structure, density, columns }: Props = $props();
 
 	const flipDurationMs = 150;
 
+	// While a category is being dragged the rendered list briefly contains
+	// svelte-dnd-action's placeholder clone, which has no home in the config
+	// array — so the index can legitimately be -1 for one frame. Writing through
+	// it would throw, so every mutation checks first.
+	const isPlaced = $derived(categoryIndex >= 0);
+
 	function handleConsider(e: CustomEvent<DndEvent<App>>) {
+		if (!isPlaced) return;
 		dashboard.config.categories[categoryIndex].apps = e.detail.items;
 	}
 
 	function handleFinalize(e: CustomEvent<DndEvent<App>>) {
+		if (!isPlaced) return;
 		const newApps = e.detail.items;
 		setTimeout(() => {
 			dashboard.config.categories[categoryIndex].apps = newApps;
@@ -31,14 +41,17 @@
 	}
 
 	function onAddApp() {
+		if (!isPlaced) return;
 		dashboard.addApp(categoryIndex);
 	}
 
 	function onRemoveCategory() {
+		if (!isPlaced) return;
 		dashboard.removeCategory(categoryIndex);
 	}
 
 	const gridColsClass: Record<number, string> = {
+		1: 'grid-cols-1',
 		2: 'sm:grid-cols-2',
 		3: 'sm:grid-cols-2 lg:grid-cols-3',
 		4: 'sm:grid-cols-2 lg:grid-cols-4',
@@ -46,9 +59,7 @@
 		6: 'sm:grid-cols-2 lg:grid-cols-6'
 	};
 
-	// In the two-column category layout each category is half the container
-	// width, so cap the app grid at 2 columns to keep cards readable.
-	const effectiveColumns = $derived(layout === 'grid' ? Math.min(columns, 2) : columns);
+	const effectiveColumns = $derived(innerColumns(structure, density, columns));
 
 	const dndType = 'gldash-apps';
 	const dropTargetStyle = { outline: '2px dashed rgba(148, 163, 184, 0.6)', outlineOffset: '2px' };
@@ -85,7 +96,7 @@
 		{/if}
 	</div>
 
-	{#if layout === 'table'}
+	{#if density === 'rows'}
 		<div class="relative">
 			{#if apps.length === 0}
 				<div
@@ -108,12 +119,12 @@
 			>
 				{#each apps as app (app.id)}
 					<div animate:flip={{ duration: flipDurationMs }}>
-						<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} dense />
+						<AppItem {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} {density} />
 					</div>
 				{/each}
 			</div>
 		</div>
-	{:else if layout === 'fluid'}
+	{:else if density === 'tiles'}
 		<div class="relative">
 			{#if apps.length === 0}
 				<div
@@ -123,7 +134,7 @@
 				</div>
 			{/if}
 			<div
-				class={`flex flex-wrap min-h-[80px] gap-4`}
+				class={`grid grid-cols-1 gap-4 ${gridColsClass[effectiveColumns] ?? gridColsClass[2]} ${emptyClass}`}
 				use:dndzone={{
 					items: apps,
 					type: dndType,
@@ -135,8 +146,8 @@
 				onfinalize={handleFinalize}
 			>
 				{#each apps as app (app.id)}
-					<div class="w-56" animate:flip={{ duration: flipDurationMs }}>
-						<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} />
+					<div animate:flip={{ duration: flipDurationMs }}>
+						<AppItem {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} {density} />
 					</div>
 				{/each}
 			</div>
@@ -164,7 +175,7 @@
 			>
 				{#each apps as app (app.id)}
 					<div animate:flip={{ duration: flipDurationMs }}>
-						<AppCard {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} />
+						<AppItem {app} ref={{ categoryIndex, appIndex: apps.indexOf(app) }} {density} />
 					</div>
 				{/each}
 			</div>

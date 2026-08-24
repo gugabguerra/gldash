@@ -11,6 +11,14 @@ import { readAuth } from '$lib/server/yaml';
 import { rateLimit } from '$lib/server/rateLimit';
 
 /**
+ * How many attempts must remain before the count is named in the error message.
+ * Disclosing it on every failure would let an attacker pace their requests to
+ * sit just under the lockout threshold indefinitely, so the warning is held
+ * back until a lockout is actually imminent.
+ */
+const ATTEMPTS_WARNING_THRESHOLD = 2;
+
+/**
  * POST /api/auth/login
  * Body: `{ "password": "...", (optional) "confirm": "..." }`
  *
@@ -21,7 +29,8 @@ import { rateLimit } from '$lib/server/rateLimit';
  */
 export const POST: RequestHandler = async ({ request, cookies, getClientAddress }) => {
 	const clientIp = getClientAddress();
-	if (!rateLimit('login', clientIp)) {
+	const rateLimitStatus = rateLimit('login', clientIp);
+	if (!rateLimitStatus.allowed) {
 		return json({ message: 'Too many attempts. Please wait and try again.' }, { status: 429 });
 	}
 
@@ -48,7 +57,15 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
 	} else {
 		const valid = await verifyPassword(password, auth.adminPasswordHash);
 		if (!valid) {
-			return json({ message: 'Incorrect password.' }, { status: 401 });
+			const { remaining } = rateLimitStatus;
+			let message = 'Incorrect password.';
+			if (remaining === 0) {
+				message = 'Incorrect password. Further attempts are temporarily blocked.';
+			} else if (remaining <= ATTEMPTS_WARNING_THRESHOLD) {
+				const attempts = remaining === 1 ? 'attempt' : 'attempts';
+				message = `Incorrect password. ${remaining} ${attempts} left before a temporary lockout.`;
+			}
+			return json({ message }, { status: 401 });
 		}
 	}
 

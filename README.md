@@ -26,11 +26,24 @@ Built with **SvelteKit 5 (runes)**, **TypeScript (strict)**, **Tailwind CSS v4**
 ## ✨ Features
 
 ### Dashboard & Layouts
-- **Three layout modes** — switchable from the toolbar:
-  - **Grid** — responsive card grid with an editable column count (2–6).
-  - **Fluid** — auto-fitting flex/masonry layout that fills the width.
-  - **Table/List** — dense rows for fast, at-a-glance scanning.
+Layout is two independent choices, so you can tune *how much fits* separately
+from *how it is grouped*.
+
+- **Three structures** — how categories are arranged (Settings → Layout):
+  - **Board** — categories packed into balanced columns. Uneven category sizes
+    fill the gaps instead of leaving ragged dead space.
+  - **Panel** — the same columns, but each category sits in a bordered
+    container. The most legible choice over a background image.
+  - **Wall** — full-width stacked sections that use the whole window.
+- **Three densities** — how each app is drawn, switchable from the toolbar:
+  - **Rows** — one line per app. Fits the most.
+  - **Cards** — icon and title, with a second line beneath. The default.
+  - **Tiles** — icon-forward, no second line. Best on a wall-mounted screen.
+- **Column count** (2–6) drives both the number of category columns and how many
+  apps sit side by side inside one.
 - **Categories** organize apps into labeled sections.
+- Apps with no `note` show their **host** instead, so the second line tells you
+  whether a service is on the LAN or behind the reverse proxy.
 - **Edit Mode** — toggle editing, then:
   - **Drag-and-drop reordering** of cards within and across categories (`svelte-dnd-action`).
   - **Per-app edit modal** — title, URL, icon, and note.
@@ -121,6 +134,41 @@ docker compose up -d --build
 
 This builds the **multi-stage Dockerfile** (`node:22-alpine`), exposes port `3000`, and mounts `./config` into the container so your dashboard configuration **and the default background image** (`config/default-bg.jpg`) persist across restarts. Both are read from the mounted volume at runtime, so editing them takes effect without a rebuild.
 
+### Per-machine overrides (private registry, host-specific ports)
+
+Do **not** edit the tracked `docker-compose.yml` to point at your own registry.
+It works until an upstream change touches the same file, and then `git pull`
+fails mid-deploy with `Your local changes would be overwritten by merge`.
+
+Two ways to keep local settings out of git, both merged by Compose
+automatically — no `-f` flags:
+
+**For a different image name**, set `GLDASH_IMAGE` in `.env` (gitignored):
+
+```dotenv
+GLDASH_IMAGE=registry.example.internal/gldash:latest
+```
+
+The tracked file reads `image: ${GLDASH_IMAGE:-gldash:latest}`, so it falls back
+to a local build when the variable is unset. See `.env.example`.
+
+**For structural changes** — pulling instead of building, extra environment,
+binding to loopback behind a proxy — copy the example override:
+
+```sh
+cp docker-compose.override.example.yml docker-compose.override.yml
+```
+
+`docker-compose.override.yml` is gitignored. Compose merges it on top of
+`docker-compose.yml` on every command, so the tracked file stays pristine and
+`git pull` can never conflict.
+
+Check what a machine actually resolves to with:
+
+```sh
+docker compose config | grep image:
+```
+
 ### Manual build
 
 ```sh
@@ -154,8 +202,9 @@ All data is validated with **Zod** on every read and write. A minimal `config.ya
 
 ```yaml
 settings:
-  layout: "grid"          # "grid" | "fluid" | "table"
-  columns: 4              # integer, 2 to 6 (grid layout)
+  structure: "board"      # "board" | "panel" | "wall"  — how categories are arranged
+  density: "cards"        # "rows" | "cards" | "tiles"  — how each app is drawn
+  columns: 4              # integer, 2 to 6
   theme:
     background: "#0f172a"
     textColor: "#f8fafc"
@@ -173,6 +222,12 @@ categories:
         icon: "simple-icons:pihole"    # lucide:* | simple-icons:* | URL | fallback
         note: "DNS Primário da Rede"
 ```
+
+> **Upgrading from a `layout:` config?** Earlier versions had a single
+> `layout: "grid" | "fluid" | "table"` key. It is migrated automatically on read
+> — `grid` becomes `density: cards`, `fluid` becomes `tiles`, `table` becomes
+> `rows`, and `structure` defaults to `board`. Nothing needs to be edited by
+> hand; the old key is dropped the next time the file is written.
 
 The **default background** lives at `config/default-bg.jpg` — the same directory as `config.yaml` — and is served from there at request time, so replacing the file (or mounting a new one) updates the dashboard without a rebuild. When `backgroundMode` is `solid`, the image is ignored and the solid color + gradient overlay is used.
 
