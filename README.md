@@ -51,12 +51,21 @@ from *how it is grouped*.
 
 ### Theming & Background Image
 - **Theme Customizer** — change background, text, and card colors **in real time**, persisted straight to `config.yaml`.
-- **Typography** — IBM Plex Sans for the interface, IBM Plex Mono for hosts and
-  other data, and Sora for the dashboard name. All three are self-hosted as
-  woff2 in `static/fonts/` (~116 KB, split by `unicode-range` so latin-ext is
-  only fetched when a character needs it). The app's CSP sets
-  `font-src 'self' data:`, so a font CDN would be blocked — and self-hosting
-  means no third-party request and no internet dependency on the LAN.
+- **Selectable typefaces** (Settings → Appearance) — **Oxanium** is the default
+  interface face; **Economica** and **Bitcount Grid Double** are one click away.
+  The picker previews each option in its own typeface, and the choice is stored
+  in `theme.fontFamily` and applied on the page wrapper, so the first
+  server-rendered paint is already correct — no flash of the default face.
+  Two things never change with it: the dashboard name is pinned to Oxanium 400,
+  and each card's second line (note or host) to Oxanium 200, so the lighter
+  display-ish alternatives cannot make them illegible. IBM Plex Mono remains for
+  `code`, `kbd` and other literal data.
+- **Self-hosted fonts** — Oxanium and Bitcount Grid Double ship as variable
+  woff2 (200–800 and 100–900), Economica as static 400/700 — all in
+  `static/fonts/` and split by `unicode-range` so latin-ext is only fetched when
+  a character needs it. The app's CSP sets `font-src 'self' data:`, so a font CDN
+  would be blocked — and self-hosting means no third-party request and no
+  internet dependency on the LAN.
 - **Accent color** — a fourth theme token driving interactive state only:
   selection, focus rings, card hover and edit mode. Colour appears where
   something is happening, not as decoration.
@@ -65,7 +74,7 @@ from *how it is grouped*.
   - **Gradient** — the same colour with two very low-opacity radials, giving the
     page a light source without a visible colour wash.
   - **Custom** — upload a JPEG/PNG/WebP (≤ 5 MB); stored on the server and served via `/api/background/image`, so it works in dev and the Node production build (*not* baked into the static manifest).
-- **Restore Default Styling** — one-click (with confirmation) reset of the theme colors and accent, returning to a solid background; layout and column count are untouched.
+- **Restore Default Styling** — one-click (with confirmation) reset of the theme colors, accent and font, returning to a solid background; layout and column count are untouched.
 - Subtle radial-gradient overlay keeps cards readable on any image.
 - Clean neutral **slate/zinc** palette, discrete 1px borders, and 150 ms micro-interactions — no "AI slop" gradients or glassmorphism.
 
@@ -222,6 +231,7 @@ settings:
     accent: "#34d399"                # interactive state only
     backgroundMode: "solid"          # "solid" | "gradient" | "custom"
     backgroundImage: ""              # uploaded image URL, only used when custom
+    fontFamily: "oxanium"            # "oxanium" | "economica" | "bitcount"
 
 categories:
   - id: "infra-01"                # optional, auto-generated if omitted

@@ -30,7 +30,7 @@
 >
 	<div class="flex min-w-0 items-center gap-2.5">
 		<img src="/logo.svg" alt="" width="24" height="24" class="h-6 w-6 shrink-0" />
-		<h1 class="app-title truncate text-base font-semibold">{dashboard.config.settings.appName}</h1>
+		<h1 class="app-title truncate text-base">{dashboard.config.settings.appName}</h1>
 	</div>
 
 	<div class="flex items-center gap-2">

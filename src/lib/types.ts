@@ -4,6 +4,7 @@ import {
 	backgroundModes,
 	densityOptions,
 	structureOptions,
+	fontFamilies,
 	DEFAULT_THEME,
 	DEFAULT_APP_NAME
 } from '$lib/constants';
@@ -15,9 +16,10 @@ export {
 	backgroundModes,
 	densityOptions,
 	structureOptions,
+	fontFamilies,
 	DEFAULT_THEME
 } from '$lib/constants';
-export type { BackgroundMode, Density, Structure } from '$lib/constants';
+export type { BackgroundMode, Density, Structure, FontFamily } from '$lib/constants';
 
 export const AppSchema = z.object({
 	id: z.string().min(1),
@@ -48,13 +50,17 @@ export const ThemeSchema = z
 		// `.catch` rather than a bare enum: a config written by an older version
 		// may carry a mode that no longer exists, and an unknown value should
 		// fall back rather than fail the whole config load.
-		backgroundMode: z.enum(backgroundModes).optional().catch(undefined)
+		backgroundMode: z.enum(backgroundModes).optional().catch(undefined),
+		// Same defensive `.catch` as backgroundMode — an unknown family from an
+		// older or hand-edited config falls back to the default.
+		fontFamily: z.enum(fontFamilies).optional().catch(undefined)
 	})
 	.transform((theme) => ({
 		...theme,
 		// An uploaded image implies "custom"; everything else falls back to the
 		// plain colour ground.
-		backgroundMode: theme.backgroundMode ?? (theme.backgroundImage ? 'custom' : 'gradient')
+		backgroundMode: theme.backgroundMode ?? (theme.backgroundImage ? 'custom' : 'gradient'),
+		fontFamily: theme.fontFamily ?? 'oxanium'
 	}));
 
 /** A validated theme with an always-present background mode. */
@@ -65,7 +71,8 @@ const defaultThemeValue: Theme = {
 	textColor: DEFAULT_THEME.textColor,
 	cardBackground: DEFAULT_THEME.cardBackground,
 	accent: DEFAULT_THEME.accent,
-	backgroundMode: 'gradient'
+	backgroundMode: 'gradient',
+	fontFamily: 'oxanium'
 };
 
 export const SettingsSchema = z.object({

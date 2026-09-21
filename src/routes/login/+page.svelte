@@ -65,7 +65,7 @@
 			>
 				<img src="/android-chrome-192x192.png" alt="GLdash logo" class="h-9 w-9 rounded-lg" />
 			</div>
-			<h1 class="app-title text-xl font-semibold">GLdash</h1>
+			<h1 class="app-title text-xl">GLdash</h1>
 			<p class="mt-1 text-sm text-slate-400">{needsSetup ? 'Create your admin password' : 'Sign in to your dashboard'}</p>
 		</div>
 

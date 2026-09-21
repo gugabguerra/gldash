@@ -109,7 +109,7 @@ class DashboardState {
 		}
 	}
 
-	/** Resets theme colors and reverts to the default background image. */
+	/** Resets theme colors and font, reverting to the default background. */
 	async resetTheme() {
 		// Best-effort cleanup of any uploaded background file on the server.
 		await fetch('/api/background', { method: 'DELETE' }).catch(() => {});
@@ -121,6 +121,7 @@ class DashboardState {
 		theme.accent = DEFAULT_THEME.accent;
 		theme.backgroundImage = undefined;
 		theme.backgroundMode = 'gradient';
+		theme.fontFamily = 'oxanium';
 
 		await this.save();
 	}

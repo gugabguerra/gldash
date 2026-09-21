@@ -1,18 +1,37 @@
 <script lang="ts">
 	import { Upload, Trash2, RotateCcw } from '@lucide/svelte';
 	import { dashboard } from '$lib/state/dashboard.svelte';
-	import { backgroundModes, type BackgroundMode } from '$lib/constants';
+	import { backgroundModes, fontFamilies, type BackgroundMode, type FontFamily } from '$lib/constants';
 	import SegmentedControl from '$lib/components/SegmentedControl.svelte';
 	import ThemeColorPickers from '$lib/components/ThemeColorPickers.svelte';
 
 	let bgFileInput = $state<HTMLInputElement | null>(null);
 
 	const bgMode = $derived(dashboard.config.settings.theme.backgroundMode);
+	const fontFamily = $derived(dashboard.config.settings.theme.fontFamily);
 	// Only a custom upload has anything to preview; solid and gradient are
 	// rendered from the chosen colour.
 	const bgPreview = $derived(
 		bgMode === 'custom' ? dashboard.config.settings.theme.backgroundImage ?? null : null
 	);
+
+	// Each option renders its label in its own typeface — the picker doubles
+	// as a live preview of the choice.
+	const fontLabels: Record<FontFamily, string> = {
+		oxanium: 'Oxanium',
+		economica: 'Economica',
+		bitcount: 'Bitcount'
+	};
+	const fontOptionStyles: Record<FontFamily, string> = {
+		oxanium: "font-family: 'Oxanium', sans-serif;",
+		economica: "font-family: 'Economica', sans-serif;",
+		bitcount: "font-family: 'Bitcount Grid Double', monospace;"
+	};
+
+	async function setFontFamily(family: FontFamily) {
+		dashboard.config.settings.theme.fontFamily = family;
+		await dashboard.save();
+	}
 
 	async function onUploadBackground(e: Event) {
 		const input = e.target as HTMLInputElement;
@@ -63,7 +82,7 @@
 		dashboard.confirm({
 			title: 'Restore Default Styling?',
 			message:
-				'Reset the theme colors and accent, and return to a solid background. Layout and columns stay unchanged.',
+				'Reset the theme colors, accent and font, and return to a solid background. Layout and columns stay unchanged.',
 			confirmLabel: 'Restore',
 			cancelLabel: 'Cancel',
 			destructive: true,
@@ -76,6 +95,21 @@
 </script>
 
 <div class="flex flex-col gap-4">
+	<!-- Font Family -->
+	<div>
+		<div id="font-family-label" class="mb-2 block text-xs text-slate-400">Font</div>
+		<div aria-labelledby="font-family-label">
+			<SegmentedControl
+				value={fontFamily}
+				options={fontFamilies}
+				onchange={(family) => setFontFamily(family as FontFamily)}
+				labels={fontLabels}
+				optionStyles={fontOptionStyles}
+			/>
+		</div>
+		<p class="mt-2 text-xs opacity-75">Applies to the dashboard. The title and notes stay in Oxanium.</p>
+	</div>
+
 	<!-- Background Mode -->
 	<div>
 		<div id="bg-image-label" class="mb-2 block text-xs text-slate-400">Background Image</div>

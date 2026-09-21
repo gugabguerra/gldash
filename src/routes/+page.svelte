@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { dashboard } from '$lib/state/dashboard.svelte';
+	import { FONT_STACKS } from '$lib/constants';
 	import Toolbar from '$lib/components/Toolbar.svelte';
 	import AddCategoryForm from '$lib/components/AddCategoryForm.svelte';
 	import ColumnLayout from '$lib/components/ColumnLayout.svelte';
@@ -22,11 +23,17 @@
 	const structure = $derived(dashboard.config.settings.structure);
 	const columns = $derived(dashboard.config.settings.columns);
 	const density = $derived(dashboard.config.settings.density);
+
 	const backgroundStyle = $derived.by(() => {
 		const color = theme.background;
 		const vars =
 			`--gl-background:${color}; --gl-text:${theme.textColor};` +
-			` --gl-card-background:${theme.cardBackground}; --gl-accent:${theme.accent};`;
+			` --gl-card-background:${theme.cardBackground}; --gl-accent:${theme.accent};` +
+			// The selectable UI font, applied to the wrapper so it is correct in
+			// the very first server-rendered paint — no flash of the default
+			// face after hydration.
+			` --gl-font-sans:${FONT_STACKS[theme.fontFamily] ?? FONT_STACKS.oxanium};` +
+			` font-family:${FONT_STACKS[theme.fontFamily] ?? FONT_STACKS.oxanium};`;
 
 		// A custom upload wins outright — an image needs no help from a gradient
 		// underneath it, and layering one only muddies the photo.

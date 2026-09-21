@@ -3,12 +3,15 @@
 		value,
 		options,
 		onchange,
-		labels = {}
+		labels = {},
+		optionStyles = {}
 	}: {
 		value: string;
 		options: readonly string[];
 		onchange: (value: string) => void;
 		labels?: Record<string, string>;
+		/** Optional inline styles per option, e.g. font previews on a font picker. */
+		optionStyles?: Record<string, string>;
 	} = $props();
 
 	function handleChange(option: string) {
@@ -22,8 +25,8 @@
 			onclick={() => handleChange(option)}
 			aria-pressed={value === option}
 			style={value === option
-				? 'color: var(--gl-accent); background-color: color-mix(in srgb, var(--gl-accent) 14%, transparent);'
-				: undefined}
+				? `color: var(--gl-accent); background-color: color-mix(in srgb, var(--gl-accent) 14%, transparent);${optionStyles[option] ?? ''}`
+				: optionStyles[option]}
 			class={`flex-1 rounded px-2 py-1 text-xs capitalize transition-all duration-150 ${value === option ? 'font-medium' : 'text-slate-400 hover:text-slate-200'}`}
 		>
 			{labels[option] ?? option}

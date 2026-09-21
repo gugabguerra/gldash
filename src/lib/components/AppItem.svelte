@@ -17,10 +17,11 @@
 	// Most apps carry no note, so the second line falls back to the host. That
 	// also reads as useful information rather than filler: it shows at a glance
 	// whether a service is reached on the LAN or through the reverse proxy.
+	// Both variants are pinned to Oxanium 200 via `.app-secondary`.
 	const host = $derived(extractHost(app.url));
 	const secondary = $derived(app.note || host);
 	const secondaryClass = $derived(
-		app.note ? 'text-xs opacity-75' : 'font-mono text-xs opacity-60'
+		app.note ? 'app-secondary text-xs opacity-75' : 'app-secondary text-xs opacity-60'
 	);
 
 	const iconSize = $derived(density === 'rows' ? 16 : density === 'cards' ? 18 : 22);
@@ -37,7 +38,7 @@
 		class={`${shell} flex items-center gap-3 rounded-md px-3 py-2`}
 	>
 		<AppIcon icon={app.icon} url={app.url} size={iconSize} />
-		<span class="flex-1 truncate text-sm font-medium">{app.title}</span>
+		<span class="flex-1 truncate text-sm font-extralight">{app.title}</span>
 		{#if secondary}
 			<span class={`hidden truncate sm:inline ${secondaryClass}`}>{secondary}</span>
 		{/if}
@@ -61,7 +62,7 @@
 		{/if}
 		<div class="flex min-w-0 items-center gap-2.5">
 			<AppIcon icon={app.icon} url={app.url} size={iconSize} />
-			<span class="truncate text-sm font-semibold">{app.title}</span>
+			<span class="truncate text-sm font-extralight">{app.title}</span>
 		</div>
 		{#if secondary}
 			<!-- Indented to sit under the title rather than under the icon. -->
@@ -83,6 +84,6 @@
 			</div>
 		{/if}
 		<AppIcon icon={app.icon} url={app.url} size={iconSize} />
-		<span class="max-w-full truncate text-center text-xs font-medium">{app.title}</span>
+		<span class="max-w-full truncate text-center text-xs font-extralight">{app.title}</span>
 	</a>
 {/if}

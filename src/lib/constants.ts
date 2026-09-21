@@ -19,6 +19,21 @@ export type Density = (typeof densityOptions)[number];
 export const backgroundModes = ['solid', 'gradient', 'custom'] as const;
 export type BackgroundMode = (typeof backgroundModes)[number];
 
+/**
+ * Selectable UI font families, offered in Settings > Appearance. Oxanium is
+ * the default; the other two are alternatives. The app title and the card
+ * secondary text are always Oxanium regardless of this choice.
+ */
+export const fontFamilies = ['oxanium', 'economica', 'bitcount'] as const;
+export type FontFamily = (typeof fontFamilies)[number];
+
+/** CSS font stacks for each selectable family, applied via `--gl-font-sans`. */
+export const FONT_STACKS: Record<FontFamily, string> = {
+	oxanium: "'Oxanium', system-ui, -apple-system, 'Segoe UI', sans-serif",
+	economica: "'Economica', 'Oxanium', system-ui, sans-serif",
+	bitcount: "'Bitcount Grid Double', 'Oxanium', system-ui, sans-serif"
+};
+
 /** Built-in default theme colors. Restored by the "Restore Defaults" action. */
 export const DEFAULT_THEME = {
 	background: '#0f172a',
@@ -48,7 +63,8 @@ export function createEmptyConfig() {
 				textColor: DEFAULT_THEME.textColor as string,
 				cardBackground: DEFAULT_THEME.cardBackground as string,
 				accent: DEFAULT_THEME.accent as string,
-				backgroundMode: 'gradient' as BackgroundMode
+				backgroundMode: 'gradient' as BackgroundMode,
+				fontFamily: 'oxanium' as FontFamily
 			}
 		},
 		categories: []
