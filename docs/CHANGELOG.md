@@ -8,6 +8,38 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.9.0] - 2026-09-21
+
+Typefaces. v0.8.0's type stack was IBM Plex Sans with Sora for the name; both are
+gone. Oxanium is now the interface face, and two alternatives can be switched on
+from Settings → Appearance without a reload or a rebuild.
+
+### Added
+- **Selectable UI fonts** — `theme.fontFamily` accepts `oxanium` (default),
+  `economica` or `bitcount`, chosen in Settings → Appearance. The value flows
+  through the existing `--gl-font-sans` token and is applied inline on the page
+  wrapper, so the first server-rendered paint is already correct — no flash of
+  the default face after hydration. An unknown value falls back to Oxanium
+  rather than failing the config load.
+- **Self-hosted Oxanium, Economica and Bitcount Grid Double** — Oxanium and
+  Bitcount Grid Double as variable woff2 (200–800, 100–900), Economica as static
+  400/700, each split by `unicode-range` like the existing faces.
+- The font picker previews each option in its own typeface.
+
+### Changed
+- **Oxanium replaces IBM Plex Sans and Sora.** Sora is removed outright; the
+  dashboard name is pinned to Oxanium 400 and no longer follows the theme.
+- **Card text is lighter.** The app title in every density is weight 200, and the
+  second line (note or host) is pinned to Oxanium 200 regardless of the chosen
+  family, so it stays legible next to the display-ish alternatives. Economica has
+  no weight below 400, so it renders that line at 400.
+- **Restore Default Styling** now resets the font as well as the colours.
+
+### Removed
+- `static/fonts/sora-*.woff2` and `static/fonts/ibm-plex-sans-*.woff2`.
+
+---
+
 ## [v0.8.0] - 2026-08-24
 
 Colour and typography. The dashboard had shipped white-on-navy in whatever font
