@@ -42,3 +42,6 @@ vite.config.ts.timestamp-*
 # Local Compose overrides (registry names, host-specific ports)
 docker-compose.override.yml
 compose.override.yml
+
+# Machine-local scripts (registry names, deploy targets)
+scripts/local/
