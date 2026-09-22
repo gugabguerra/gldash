@@ -17,9 +17,9 @@ Built with **SvelteKit 5 (runes)**, **TypeScript (strict)**, **Tailwind CSS v4**
 
 </div>
 
-| Icon picker (autocomplete) | Login page |
-| -------------------------- | ---------- |
-| ![Icon picker](static/screenshots/edit-app-icons.png) | ![Login](static/screenshots/login.png) |
+| Edit mode (drag & drop) | Icon picker (autocomplete) | Login page |
+| ----------------------- | -------------------------- | ---------- |
+| ![Edit mode](static/screenshots/edit-dragging.png) | ![Icon picker](static/screenshots/edit-app-icons.png) | ![Login](static/screenshots/login.png) |
 
 ---
 
