@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Concept 01 — Bento</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+body { margin: 0; font-family: 'IBM Plex Sans', system-ui, sans-serif; background: #0f172a; }
+a { color: #36d3d0; } a:hover { color: #34d399; }
+</style>
+</helmet>
+<div style="width: 520px; height: 580px; box-sizing: border-box; padding: 28px; background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; gap: 18px;">
+
+  <div style="display: flex; flex-direction: column; gap: 5px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #36d3d0;">01</div>
+    <h2 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.01em; color: #f8fafc;">Bento</h2>
+    <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #94a3b8;">The dashboard itself: one wide tile, two stacked. Solid shapes, no strokes.</p>
+  </div>
+
+  <div style="display: flex; justify-content: center;">
+    <div style="width: 176px; height: 176px; border-radius: 40px; background: #0f172a; border: 1px solid #334155; display: flex; align-items: center; justify-content: center;">
+      <svg viewBox="0 0 64 64" width="112" height="112" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bento mark">
+        <rect x="10" y="10" width="22" height="44" rx="6" fill="#34d399"></rect>
+        <rect x="38" y="10" width="16" height="18" rx="5" fill="#36d3d0"></rect>
+        <rect x="38" y="34" width="16" height="20" rx="5" fill="#34d399" opacity="0.55"></rect>
+      </svg>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 9px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #64748b;">Small sizes</div>
+    <div style="display: flex; gap: 20px; align-items: flex-end;">
+      <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+        <svg viewBox="0 0 64 64" width="32" height="32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="10" y="10" width="22" height="44" rx="6" fill="#34d399"></rect>
+          <rect x="38" y="10" width="16" height="18" rx="5" fill="#36d3d0"></rect>
+          <rect x="38" y="34" width="16" height="20" rx="5" fill="#34d399" opacity="0.55"></rect>
+        </svg>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #64748b;">32</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+        <svg viewBox="0 0 64 64" width="24" height="24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="10" y="10" width="22" height="44" rx="6" fill="#34d399"></rect>
+          <rect x="38" y="10" width="16" height="18" rx="5" fill="#36d3d0"></rect>
+          <rect x="38" y="34" width="16" height="20" rx="5" fill="#34d399" opacity="0.55"></rect>
+        </svg>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #64748b;">24</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+        <svg viewBox="0 0 64 64" width="16" height="16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="10" y="10" width="22" height="44" rx="6" fill="#34d399"></rect>
+          <rect x="38" y="10" width="16" height="18" rx="5" fill="#36d3d0"></rect>
+          <rect x="38" y="34" width="16" height="20" rx="5" fill="#34d399" opacity="0.55"></rect>
+        </svg>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #64748b;">16</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 11px; padding: 16px 18px; background: #f8fafc; border-radius: 12px;">
+    <svg viewBox="0 0 64 64" width="28" height="28" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="10" y="10" width="22" height="44" rx="6" fill="#0f172a"></rect>
+      <rect x="38" y="10" width="16" height="18" rx="5" fill="#0f766e"></rect>
+      <rect x="38" y="34" width="16" height="20" rx="5" fill="#0f172a" opacity="0.55"></rect>
+    </svg>
+    <span style="font-family: 'Sora', sans-serif; font-weight: 600; font-size: 21px; letter-spacing: -0.015em; color: #0f172a;">GLdash</span>
+  </div>
+
+  <div style="display: flex; gap: 12px;">
+    <div style="flex-grow: 1; height: 68px; border-radius: 12px; background: #1e293b; color: #f8fafc; display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <svg viewBox="0 0 64 64" width="30" height="30" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="10" y="10" width="22" height="44" rx="6" fill="currentColor"></rect>
+        <rect x="38" y="10" width="16" height="18" rx="5" fill="currentColor"></rect>
+        <rect x="38" y="34" width="16" height="20" rx="5" fill="currentColor"></rect>
+      </svg>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #94a3b8;">one colour</span>
+    </div>
+    <div style="flex-grow: 1; height: 68px; border-radius: 12px; background: #f8fafc; color: #0f172a; display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <svg viewBox="0 0 64 64" width="30" height="30" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="10" y="10" width="22" height="44" rx="6" fill="currentColor"></rect>
+        <rect x="38" y="10" width="16" height="18" rx="5" fill="currentColor"></rect>
+        <rect x="38" y="34" width="16" height="20" rx="5" fill="currentColor"></rect>
+      </svg>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #475569;">inverted</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":520,"height":580}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
