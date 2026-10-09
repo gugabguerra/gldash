@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { dndzone, type DndEvent } from 'svelte-dnd-action';
+	import { dndzone, TRIGGERS, type DndEvent } from 'svelte-dnd-action';
 	import { flip } from 'svelte/animate';
-	import { splitEvenly, packColumns, innerColumns } from '$lib/utils/columns';
+	import { splitEvenly, reorderForDrop } from '$lib/utils/columns';
 	import CategorySection from './CategorySection.svelte';
 	import type { Category, Density } from '$lib/types';
 	import { dashboard } from '$lib/state/dashboard.svelte';
@@ -21,21 +21,14 @@
 	// flow, because svelte-dnd-action needs stable per-column box geometry to
 	// work out drop targets.
 	//
+	// Sequential chunks in both view and edit mode: the board never reshuffles
+	// when Edit Mode is toggled, and the flat order stays exactly
+	// concat(col0, col1, ...), which is what `reorderForDrop` maps a drop back to.
+	//
 	// This has to be $derived, not $state seeded by an $effect: effects do not
 	// run during SSR, so an effect-filled version server-renders an empty grid
 	// and only fills in after hydration.
-	const split = $derived.by(() => {
-		// View mode balances columns by height. Edit mode switches to sequential
-		// chunks so the flat order is exactly concat(col0, col1, ...) — that is
-		// what makes the drop below reconstructible — and so the board does not
-		// re-flow under the cursor mid-drag.
-		const perRow = innerColumns(structure, density, columns);
-		return dashboard.editMode
-			? splitEvenly(dashboard.config.categories, columns)
-			: packColumns(dashboard.config.categories, columns, (cat) =>
-					Math.max(1, Math.ceil(cat.apps.length / perRow))
-				);
-	});
+	const split = $derived(splitEvenly(dashboard.config.categories, columns));
 
 	/** Non-null only while a category is mid-flight, so the drag owns the layout. */
 	let dragging = $state<Category[][] | null>(null);
@@ -51,10 +44,32 @@
 	}
 
 	function onFinalizeColumn(e: CustomEvent<DndEvent<Category>>, columnIndex: number) {
-		const next = withColumn(columnIndex, e.detail.items);
-		dragging = next;
+		// A cross-column drop finalizes on both zones. The destination event
+		// carries the drop position; the origin's is a duplicate, and committing
+		// both would race two saves.
+		if (e.detail.info.trigger === TRIGGERS.DROPPED_INTO_ANOTHER) return;
+
+		const draggedId = e.detail.info.id;
+		const dropIndex = e.detail.items.findIndex((c) => c.id === draggedId);
+		if (dropIndex === -1) {
+			// Defensive: the finalized list lost the item (a race in the library
+			// on very fast gestures). The config was never mutated mid-drag, so
+			// releasing the local override restores the pre-drag board.
+			dragging = null;
+			return;
+		}
+
+		const next = reorderForDrop(
+			dashboard.config.categories,
+			draggedId,
+			columnIndex,
+			dropIndex,
+			columns,
+			(c) => c.id ?? ''
+		);
+
 		setTimeout(() => {
-			dashboard.config.categories = next.flat();
+			dashboard.config.categories = next;
 			dashboard.save();
 			// Hand the layout back to the derived split now that config is the
 			// source of truth again.

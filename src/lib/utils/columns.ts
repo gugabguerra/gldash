@@ -3,50 +3,21 @@
 import type { Density, Structure } from '$lib/types';
 
 /**
- * Distributes items into `columns` buckets, always appending to the shortest
- * bucket so the columns end up close to equal height. Input order is preserved
- * within each bucket. Used in view mode.
- *
- * @param items Read-only array of items to distribute.
- * @param columns Number of columns; clamped to a minimum of 1.
- * @param estimate Function that returns the height of an item.
- * @returns An array of exactly `columns` arrays, even if trailing ones are empty.
- *          On ties (multiple columns with the same minimum height), picks the
- *          leftmost column, ensuring deterministic left-to-right fill.
+ * Number of items each column receives when `itemCount` items are distributed
+ * sequentially: the first `itemCount % columns` columns take one extra item, so
+ * earlier columns are never shorter than later ones. Shared by `splitEvenly`
+ * and `reorderForDrop` so the layout and the drop math can never disagree.
  */
-export function packColumns<T>(
-	items: readonly T[],
-	columns: number,
-	estimate: (item: T) => number
-): T[][] {
+function columnSizes(itemCount: number, columns: number): number[] {
 	const numColumns = Math.max(1, Math.floor(columns));
+	const base = Math.floor(itemCount / numColumns);
+	const remainder = itemCount % numColumns;
 
-	// Initialize empty columns and track their heights.
-	const result: T[][] = Array.from({ length: numColumns }, () => []);
-	const heights: number[] = Array(numColumns).fill(0);
-
-	// Greedily pack each item into the shortest column.
-	for (const item of items) {
-		const itemHeight = estimate(item);
-
-		// Find the column with the minimum height (leftmost on tie).
-		let minIdx = 0;
-		for (let i = 1; i < numColumns; i++) {
-			if (heights[i] < heights[minIdx]) {
-				minIdx = i;
-			}
-		}
-
-		result[minIdx].push(item);
-		heights[minIdx] += itemHeight;
-	}
-
-	return result;
+	return Array.from({ length: numColumns }, (_, col) => base + (col < remainder ? 1 : 0));
 }
 
 /**
  * Splits items into `columns` sequential chunks of near-equal COUNT.
- * Geometry stays put while the user drags, so this is used in edit mode.
  *
  * @param items Read-only array of items to split.
  * @param columns Number of columns; clamped to a minimum of 1.
@@ -55,27 +26,59 @@ export function packColumns<T>(
  *          are never shorter than later ones (e.g. 9 items into 4 columns -> 3,2,2,2).
  */
 export function splitEvenly<T>(items: readonly T[], columns: number): T[][] {
-	const numColumns = Math.max(1, Math.floor(columns));
+	const result: T[][] = [];
+	let start = 0;
 
-	// Initialize empty columns.
-	const result: T[][] = Array.from({ length: numColumns }, () => []);
-
-	// Calculate base size and remainder.
-	const base = Math.floor(items.length / numColumns);
-	const remainder = items.length % numColumns;
-
-	// Distribute items sequentially, giving first `remainder` columns an extra item.
-	let itemIndex = 0;
-	for (let col = 0; col < numColumns; col++) {
-		const size = col < remainder ? base + 1 : base;
-		for (let i = 0; i < size; i++) {
-			if (itemIndex < items.length) {
-				result[col].push(items[itemIndex++]);
-			}
-		}
+	for (const size of columnSizes(items.length, columns)) {
+		result.push(items.slice(start, start + size));
+		start += size;
 	}
 
 	return result;
+}
+
+/**
+ * Reorders `items` after one of them was dropped into `targetColumn` at
+ * `targetIndex` (its position within that column's visible list).
+ *
+ * Columns are sequential chunks of the flat list, so where an item ends up is
+ * decided entirely by its index. A drop that leaves the columns unequal cannot
+ * be represented as-is — re-splitting would snap the item to a different
+ * column. Mapping the drop back to the flat index inside the target column's
+ * share keeps the item exactly where it was dropped; neighbouring items absorb
+ * the rebalance.
+ *
+ * @param items Flat list in its pre-drop order.
+ * @param draggedId Id of the item that was dragged.
+ * @param targetColumn Zero-based column the item was dropped into.
+ * @param targetIndex Zero-based position the item was dropped at within that column.
+ * @param columns Number of columns; clamped to a minimum of 1.
+ * @param getId Reads an item's id.
+ * @returns A new flat list; the input is not mutated.
+ */
+export function reorderForDrop<T>(
+	items: readonly T[],
+	draggedId: string,
+	targetColumn: number,
+	targetIndex: number,
+	columns: number,
+	getId: (item: T) => string
+): T[] {
+	const dragged = items.find((item) => getId(item) === draggedId);
+	if (!dragged) return [...items];
+
+	const sizes = columnSizes(items.length, columns);
+	const col = Math.min(Math.max(0, Math.floor(targetColumn)), sizes.length - 1);
+	const start = sizes.slice(0, col).reduce((sum, size) => sum + size, 0);
+
+	// Clamp to the target column's share (0 for an empty trailing column) so a
+	// drop near a boundary cannot spill into a neighbour once the list re-splits.
+	const offset = Math.min(Math.max(0, Math.floor(targetIndex)), Math.max(0, sizes[col] - 1));
+
+	const rest = items.filter((item) => item !== dragged);
+	rest.splice(Math.min(start + offset, rest.length), 0, dragged);
+
+	return rest;
 }
 
 /**

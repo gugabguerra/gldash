@@ -30,8 +30,9 @@ Layout is two independent choices, so you can tune *how much fits* separately
 from *how it is grouped*.
 
 - **Three structures** — how categories are arranged (Settings → Layout):
-  - **Board** — categories packed into balanced columns. Uneven category sizes
-    fill the gaps instead of leaving ragged dead space.
+  - **Board** — categories flow into `columns` equal-count columns, left to
+    right. The order is exactly the flat config order, so the board looks the
+    same in view and Edit Mode and a drag lands where it is dropped.
   - **Panel** — the same columns, but each category sits in a bordered
     container. The most legible choice over a background image.
   - **Wall** — full-width stacked sections that use the whole window.

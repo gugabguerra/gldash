@@ -220,7 +220,7 @@ renders `AppItem.svelte` at the chosen density.
 
 ### Why the columns are built in JS
 
-Board and panel distribute categories with `packColumns()` rather than CSS
+Board and panel distribute categories with `splitEvenly()` rather than CSS
 `column-count`. A multi-column flow has no stable per-column box geometry, and
 `svelte-dnd-action` measures element rects to work out drop targets — so the
 columns have to be real elements.
@@ -241,11 +241,14 @@ Handled entirely by `svelte-dnd-action`, at two levels:
 `onconsider` writes only to local drag state, never the config. `onfinalize`
 commits and calls `dashboard.save()`.
 
-The mode switch matters here: view mode packs columns by height, but **edit mode
-switches to `splitEvenly()`**. Sequential chunks mean the flat category order is
-exactly `concat(col0, col1, …)`, so a drop can be reconstructed with a single
-`.flat()`. Height-balanced packing has no clean inverse, and re-packing mid-drag
-would make the board move under the cursor.
+View and edit mode use the same distribution, so toggling Edit Mode never
+reshuffles the board. Columns are sequential chunks, so the flat category order
+is exactly `concat(col0, col1, …)`; `reorderForDrop()` maps a drop (target
+column + index within it) back to the flat index inside that column's
+equal-count share. The item stays exactly where it was dropped, and the
+neighbouring items absorb the rebalance. A cross-column drop finalizes on both
+zones, so the handler commits only the destination event (`droppedIntoAnother`
+is ignored) to avoid two racing saves.
 - `dragDisabled` is bound to `dashboard.editMode`, so dragging only happens in
   Edit Mode.
 
