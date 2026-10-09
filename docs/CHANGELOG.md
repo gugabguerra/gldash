@@ -8,6 +8,31 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.9.1] - 2026-10-09
+
+Edit Mode and the board now agree. Entering Edit Mode used to reshuffle the
+board, and a category dropped into another column could snap back to the one it
+came from.
+
+### Fixed
+- **Edit Mode no longer reorders the board.** View mode packed categories into
+  height-balanced columns while Edit Mode used sequential chunks, so toggling
+  the mode moved sections around.
+- **Cross-column drops stay where they are dropped.** The dropped columns were
+  flattened and re-split by count, which could send the dragged category back to
+  its original column. `reorderForDrop()` now maps the drop position back to the
+  flat index inside the target column's share, so the item lands exactly where
+  it was dropped and the neighbouring items absorb the rebalance.
+- A cross-column drop finalizes on both dnd zones; only the destination event is
+  committed now, instead of two racing saves.
+
+### Changed
+- **Board columns are equal-count and sequential** (left to right) instead of
+  height-balanced. The order is the flat `config.yaml` order, which is what makes
+  view mode, Edit Mode and drag-and-drop agree. `packColumns()` is removed.
+
+---
+
 ## [v0.9.0] - 2026-09-21
 
 Typefaces. v0.8.0's type stack was IBM Plex Sans with Sora for the name; both are
